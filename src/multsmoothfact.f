@@ -5,7 +5,7 @@
       complex dataspec_smooth(nmdim,nt)
       real smooth(nlat)
 
-      ntrunc = -1.5 + 0.5*sqrt(9.-8.*(1.-float(nmdim)))
+      ntrunc = int(-1.5 + 0.5*sqrt(9.-8.*(1.-float(nmdim))))
 
       do i=1,nt
       nmstrt = 0
