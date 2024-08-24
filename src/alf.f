@@ -107,29 +107,33 @@ c
       cp(1) = 0.
       ma = iabs(m)
       if(ma .gt. n) return
-      if(n-1) 2,3,5
+      if ((n - 1) .lt. 0) then
     2 cp(1) = sqrt(2.)
       return
-    3 if(ma .ne. 0) go to 4
+      else if ((n - 1) .eq. 0) then
+    3 if(ma .eq. 0) then
       cp(1) = sqrt(1.5)
       return
+      endif
     4 cp(1) = sqrt(.75)
       if(m .eq. -1) cp(1) = -cp(1)
       return
-    5 if(mod(n+ma,2) .ne. 0) go to 10
+      else
+    5 if(mod(n+ma,2) .eq. 0) then
       nmms2 = (n-ma)/2
       fnum = n+ma+1
       fnmh = n-ma+1
       pm1 = 1.
-      go to 15
+      else
    10 nmms2 = (n-ma-1)/2
       fnum = n+ma+2
       fnmh = n-ma+2
       pm1 = -1.
+      endif
  15   t1 = 1./sc20
       nex = 20
       fden = 2.
-      if(nmms2 .lt. 1) go to 20
+      if(nmms2 .ge. 1) then
       do 18 i=1,nmms2
       t1 = fnum*t1/fden
       if(t1 .gt. sc20) then
@@ -139,27 +143,31 @@ c
       fnum = fnum+2.
       fden = fden+2.
    18 continue
+      endif
    20 t1 = t1/2.**(n-1-nex)
       if(mod(ma/2,2) .ne. 0) t1 = -t1
       t2 = 1. 
-      if(ma .eq. 0) go to 26
+      if(ma .ne. 0) then
       do 25 i=1,ma
       t2 = fnmh*t2/(fnmh+pm1)
       fnmh = fnmh+2.
    25 continue
+      endif
    26 cp2 = t1*sqrt((n+.5)*t2)
       fnnp1 = n*(n+1)
       fnmsq = fnnp1-2.*ma*ma
       l = (n+1)/2
       if(mod(n,2) .eq. 0 .and. mod(ma,2) .eq. 0) l = l+1
       cp(l) = cp2
-      if(m .ge. 0) go to 29
+      if(m .lt. 0) then
       if(mod(ma,2) .ne. 0) cp(l) = -cp(l)
+      endif
    29 if(l .le. 1) return
       fk = n
       a1 = (fk-2.)*(fk-1.)-fnnp1
       b1 = 2.*(fk*fk-fnmsq)
       cp(l-1) = b1*cp(l)/a1
+      do while (.true.)
    30 l = l-1
       if(l .le. 1) return
       fk = fk-2.
@@ -167,7 +175,8 @@ c
       b1 = -2.*(fk*fk-fnmsq)
       c1 = (fk+1.)*(fk+2.)-fnnp1
       cp(l-1) = -(b1*cp(l)+c1*cp(l+1))/a1
-      go to 30
+      enddo
+      endif
       end
 c subroutine lfim (init,theta,l,n,nm,pb,id,wlfim)
 c
@@ -262,7 +271,7 @@ c                        a four term recurrence relation. (unpublished
 c                        notes by paul n. swarztrauber)
 c
       subroutine lfim (init,theta,l,n,nm,pb,id,wlfim)
-      dimension       pb(1)        ,wlfim(1)
+      dimension       pb(id, nm+1)        ,wlfim(4*l*(nm+1))
       dimension theta(l)
 c
 c     total length of wlfim is 4*l*(nm+1)
@@ -276,10 +285,11 @@ c
       return
       end
       subroutine lfim1(init,theta,l,n,nm,id,p3,phz,ph1,p1,p2,cp)
-      dimension       p1(l,1)    ,p2(l,1)    ,p3(id,1)   ,phz(l,1)   ,
-     1                ph1(l,1)   ,cp(1)      ,theta(l)
+      dimension       p1(l,3)    ,p2(l,3)    ,p3(id,3)   ,
+     C                phz(l,max(3, nm+1))   ,
+     1                ph1(l,3)   ,cp(1)      ,theta(l)
       nmp1 = nm+1
-      if(init .ne. 0) go to 5
+      if(init .eq. 0) then ! go to 5
       ssqrt2 = 1./sqrt(2.)
       do 10 i=1,l
       phz(i,1) = ssqrt2
@@ -296,17 +306,19 @@ c
    17 continue
    15 continue
       return
-    5 if(n .gt. 2) go to 60
-      if(n-1)25,30,35
+      else if (n .le. 2) then
+      if ((n - 1) .lt. 0) then
    25 do 45 i=1,l
       p3(i,1)=phz(i,1)
    45 continue
       return
+      else if ((n - 1) .eq. 0) then
    30 do 50 i=1,l
       p3(i,1) = phz(i,2)
       p3(i,2) = ph1(i,2)
    50 continue
       return
+      else
    35 sq5s6 = sqrt(5./6.)
       sq1s6 = sqrt(1./6.)
       do 55 i=1,l
@@ -320,6 +332,8 @@ c
       p2(i,3) = p3(i,3)
    55 continue
       return
+      endif
+      endif
    60 nm1 = n-1
       np1 = n+1
       fn = float(n)
@@ -329,8 +343,8 @@ c
       p3(i,1) = phz(i,np1)
       p3(i,2) = ph1(i,np1)
    65 continue
-      if(nm1 .lt. 3) go to 71
-      do 70 mp1=3,nm1
+      if (nm1 .ge. 3) then
+      do 701 mp1=3,nm1
       m = mp1-1
       fm = float(m)
       fnpm = fn+fm
@@ -339,9 +353,11 @@ c
       cc = sqrt(cn*(fnpm-3.)*(fnpm-2.)/temp)
       dd = sqrt(cn*fnmm*(fnmm-1.)/temp)
       ee = sqrt((fnmm+1.)*(fnmm+2.)/temp)
-      do 70 i=1,l
+      do 702 i=1,l
       p3(i,mp1) = cc*p1(i,mp1-2)+dd*p1(i,mp1)-ee*p3(i,mp1-2)
-   70 continue
+ 702  enddo
+ 701  enddo
+      endif
    71 fnpm = fn+fn-1.
       temp = fnpm*(fnpm-1.)
       cc = sqrt(cn*(fnpm-3.)*(fnpm-2.)/temp)
@@ -356,11 +372,12 @@ c
       do 80 i=1,l
       p3(i,n+1) = cc*p1(i,n-1)-ee*p3(i,n-1)
    80 continue
-      do 90 mp1=1,np1
-      do 90 i=1,l
+      do 901 mp1=1,np1
+      do 902 i=1,l
       p1(i,mp1) = p2(i,mp1)
       p2(i,mp1) = p3(i,mp1)
-   90 continue
+ 902  continue
+ 901  enddo
       return
       end
 c subroutine lfin (init,theta,l,m,nm,pb,id,wlfin)
@@ -469,10 +486,10 @@ c
       return
       end
       subroutine lfin1(init,theta,l,m,nm,id,p3,phz,ph1,p1,p2,cp)
-      dimension       p1(l,1)    ,p2(l,1)    ,p3(id,1)   ,phz(l,1)   ,
-     1                ph1(l,1)   ,cp(1)      ,theta(l)
+      dimension       p1(l,1)    ,p2(l,2)    ,p3(id,2)   ,phz(l,2)   ,
+     1                ph1(l,2)   ,cp(1)      ,theta(l)
       nmp1 = nm+1
-      if(init .ne. 0) go to 5
+      if(init .eq. 0) then
       ssqrt2 = 1./sqrt(2.)
       do 10 i=1,l
       phz(i,1) = ssqrt2
@@ -489,22 +506,27 @@ c
    17 continue
    15 continue
       return
+      endif
     5 mp1 = m+1
       fm = float(m)
       tm = fm+fm
-      if(m-1)25,30,35
-   25 do 45 np1=1,nmp1
-      do 45 i=1,l
+      if ((m - 1) .lt. 0) then
+   25 do 451 np1=1,nmp1
+      do 452 i=1,l
       p3(i,np1) = phz(i,np1)
       p1(i,np1) = phz(i,np1)
-   45 continue
+ 452  continue
+ 451  enddo
       return
-   30 do 50 np1=2,nmp1
-      do 50 i=1,l
+      elseif ((m - 1) .eq. 0) then
+   30 do 501 np1=2,nmp1
+      do 502 i=1,l
       p3(i,np1) = ph1(i,np1)
       p2(i,np1) = ph1(i,np1)
-   50 continue
+ 502  continue
+ 501  enddo
       return
+      else
    35 temp = tm*(tm-1.)
       cc = sqrt((tm+1.)*(tm-2.)/temp)
       ee = sqrt(2./temp)
@@ -519,8 +541,8 @@ c
       p3(i,m+2) = cc*p1(i,m)-ee*p1(i,m+2)
    70 continue
       mp3 = m+3
-      if(nmp1 .lt. mp3) go to 80
-      do 75 np1=mp3,nmp1
+      if(nmp1 .ge. mp3) then  ! go to 80
+      do 751 np1=mp3,nmp1
       n = np1-1
       fn = float(n)
       tn = fn+fn
@@ -531,15 +553,19 @@ c
       cc = sqrt(cn*(fnpm-3.)*(fnpm-2.)/temp)
       dd = sqrt(cn*fnmm*(fnmm-1.)/temp)
       ee = sqrt((fnmm+1.)*(fnmm+2.)/temp)
-      do 75 i=1,l
+      do 752 i=1,l
       p3(i,np1) = cc*p1(i,np1-2)+dd*p3(i,np1-2)-ee*p1(i,np1)
-   75 continue
-   80 do 90 np1=m,nmp1
-      do 90 i=1,l
+ 752  continue
+ 751  enddo
+      endif
+   80 do 901 np1=m,nmp1
+      do 902 i=1,l
       p1(i,np1) = p2(i,np1)
       p2(i,np1) = p3(i,np1)
-   90 continue
+ 902  continue
+ 901  enddo
       return
+      endif
       end
 c subroutine lfpt (n,m,theta,cp,pb)
 c
@@ -610,20 +636,19 @@ c timing                 time per call to routine lfpt is dependent on
 c                        the input parameter n.
 c
       subroutine lfpt (n,m,theta,cp,pb)
-      dimension       cp(1)
+      dimension       cp(n/2+1)
 c
       pb = 0.
       ma = iabs(m)
       if(ma .gt. n) return
-      if (n)  10, 10, 30
-   10 if (ma)  20, 20, 30
+      if ((n .le. 0) .and. (ma .le. 0)) then
    20 pb= sqrt(.5)
-      go to 140
+      else
    30 np1 = n+1
       nmod = mod(n,2)
       mmod = mod(ma,2)
-      if (nmod)  40, 40, 90
-   40 if (mmod)  50, 50, 70
+      if (nmod .le. 0) then
+      if (mmod .le. 0) then
    50 kdo = n/2+1
       cdt = cos(theta+theta)
       sdt = sin(theta+theta)
@@ -637,7 +662,8 @@ c
          sum = sum+cp(kp1)*ct
    60 continue
       pb= sum
-      go to 140
+      return
+      endif ! 45 mmod .le. 0
    70 kdo = n/2
       cdt = cos(theta+theta)
       sdt = sin(theta+theta)
@@ -651,9 +677,10 @@ c
          sum = sum+cp(k)*st
    80 continue
       pb= sum
-      go to 140
+      return
+      endif ! 40 nmod .le. 0
    90 kdo = (n+1)/2
-      if (mmod) 100,100,120
+      if (mmod .le. 0) then
   100 cdt = cos(theta+theta)
       sdt = sin(theta+theta)
       ct = cos(theta)
@@ -666,7 +693,8 @@ c
          sum = sum+cp(k)*ct
   110 continue
       pb= sum
-      go to 140
+      return
+      endif ! 95 mmod .eq 0
   120 cdt = cos(theta+theta)
       sdt = sin(theta+theta)
       ct = cos(theta)
@@ -679,5 +707,6 @@ c
          sum = sum+cp(k)*st
   130 continue
       pb= sum
+      endif ! 15 (n .le. 0) .and. (ma .le. 0)
   140 return
       end
