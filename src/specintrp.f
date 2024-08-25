@@ -21,7 +21,7 @@ c interpolated function at that pt (ob).
          nmstrt = nmstrt + mwaves-m+1
       enddo
 
-      ob = scrm(1)
+      ob = real(scrm(1))
       do m=2,mwaves
          ob = ob + 
      *        2.0*real(scrm(m))*cos(float(m-1)*rlon)- 
