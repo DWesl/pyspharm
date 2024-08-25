@@ -1,5 +1,5 @@
 [build-system]
-requires = ["meson-python", "numpy"]
+requires = ["meson-python", "numpy<2.0; python_version<'3.10'", "numpy; python_version>='3.10'"]
 build-backend = "mesonpy"
 
 [project]
@@ -15,7 +15,7 @@ license = { file = "LICENSE.spherepack" }
 classifiers = [
     "Topic :: Scientific/Engineering :: Atmospheric Science"
 ]
-dependencies = [ "numpy" ]
+dependencies = [ "numpy<2.0; python_version<'3.10'", "numpy; python_version>='3.10'" ]
 
 [project.urls]
 Homepage = "http://code.google.com/p/pyspharm"
