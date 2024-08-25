@@ -5,7 +5,7 @@
      *     cr(nlat,nlat,nt),ci(nlat,nlat,nt),rsphere
       complex vrtspec(nmdim,nt),divspec(nmdim,nt)
 
-      ntrunc = -1.5 + 0.5*sqrt(9.-8.*(1.-float(nmdim)))
+      ntrunc = int(-1.5 + 0.5*sqrt(9.-8.*(1.-float(nmdim))))
 
       scale = 0.5
 
