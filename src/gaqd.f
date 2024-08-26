@@ -137,7 +137,7 @@ c
       call tpdp (nlat,zero,cz,theta(ns2+1),wts(ns2+1),pb,dpb)
       dcor = pb/dpb
       sgnd = 1.0
-      if(dcor .ne. 0.0d0) sgnd = real(dcor/dabs(dcor))
+      if(dcor .ne. 0.0d0) sgnd = dcor/dabs(dcor)
       dcor = sgnd*min(dabs(dcor),cmax)
       zero = zero-dcor
       if(dabs(zero-zlast).gt.eps*dabs(zero)) go to 10
@@ -304,12 +304,11 @@ c     about any systems where these assumptions do not hold.
 c
 c     this version dated 4/6/83.
 c
-C     eps = epsilon(x)  ! F90+
       a = 4.0d0/3.0d0
    10 b = a - 1.0d0
       c = b + b + b
       eps = abs(c-1.0d0)
       if (eps .eq. 0.0d0) go to 10
-      dzeps = real(eps*dabs(x))
+      dzeps = eps*dabs(x)
       return
       end
