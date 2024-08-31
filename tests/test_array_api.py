@@ -15,9 +15,11 @@ else:
 
 transform = spharm.Spharmt(64, 32)
 
+
 @pytest.mark.parametrize("data", test_data)
 def test_grdtospec(data):
     result = transform.grdtospec(data, 21)
+
 
 @pytest.mark.parametrize("data", test_data)
 def test_regrid(data):
