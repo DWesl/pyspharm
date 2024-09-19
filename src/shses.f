@@ -417,6 +417,7 @@ c ****************************************************************
       subroutine shsesi(nlat,nlon,wshses,lshses,work,lwork,dwork,
      +                  ldwork,ierror)
       use sp_hrfft, only: hrffti
+      use sp_sphcom, only: ses1
       dimension wshses(*),work(*)
       double precision dwork(*)
       ierror = 1

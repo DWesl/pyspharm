@@ -356,6 +356,7 @@ c
       subroutine vhagc1(nlat,nlon,ityp,nt,imid,idvw,jdvw,v,w,mdab,
      +ndab,br,bi,cr,ci,idv,ve,vo,we,wo,vb,wb,wts,wvbin,wwbin,wrfft)
       use sp_hrfft, only: hrfftf
+      use sp_sphcom, only: wbin, vbin
       dimension v(idvw,jdvw,1),w(idvw,jdvw,1),br(mdab,ndab,1),
      1          bi(mdab,ndab,1),cr(mdab,ndab,1),ci(mdab,ndab,1),
      2          ve(idv,nlon,1),vo(idv,nlon,1),we(idv,nlon,1),
@@ -985,6 +986,7 @@ c
       end
       subroutine vhagci(nlat,nlon,wvhagc,lvhagc,dwork,ldwork,ierror)
       use sp_hrfft, only: hrffti
+      use sp_sphcom, only: vbgint, wbgint
       dimension wvhagc(1)
       double precision dwork(*)
       ierror = 1

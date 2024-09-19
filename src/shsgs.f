@@ -544,6 +544,7 @@ c     set legendre poly pointer in wshsgs
       return
       end
       subroutine shsgss1(nlat,l,late,w,pmn,pmnf)
+      use sp_sphcom, only: legin
       dimension w(1),pmn(nlat,late,3),pmnf(late,1)
 c     compute and store legendre polys for i=1,...,late,m=0,...,l-1
 c     and n=m,...,l-1
@@ -613,6 +614,7 @@ c     iw = idwts+2*nlat
       subroutine shsgsp1(nlat,nlon,l,late,wts,p0n,p1n,abel,bbel,cbel,
      +                   wfft,dtheta,dwts,work,ier)
       use sp_hrfft, only: hrffti
+      use sp_sphcom, only: dnlft, dnlfk
       dimension wts(nlat),p0n(nlat,late),p1n(nlat,late),abel(1),bbel(1),
      1 cbel(1),wfft(1),dtheta(nlat),dwts(nlat)
       double precision pb,dtheta,dwts,work(*)

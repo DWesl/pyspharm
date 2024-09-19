@@ -441,6 +441,7 @@ c ****************************************************************
       subroutine shaesi(nlat,nlon,wshaes,lshaes,work,lwork,dwork,
      +                  ldwork,ierror)
       use sp_hrfft, only: hrffti
+      use sp_sphcom, only: sea1
       dimension wshaes(*),work(*)
       double precision dwork(*)
 c

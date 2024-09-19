@@ -19,6 +19,12 @@ c     this file must be loaded with all driver level files
 c     in spherepack3.0.  it includes undocumented subroutines
 c     called by some or all of the drivers
 c
+      module sp_sphcom
+      private
+      public :: dnlfk, dnlft, legin, zfin, zfinit, alin, alinit
+      public :: zvinit, zwinit, zvin, zwin, vbinit, wbinit, vbin, wbin
+      public :: vbgint, wbgint, sea1, ses1
+      contains
       subroutine dnlfk (m,n,cp)
 c
 c     cp requires n/2+1 double precision locations
@@ -2469,4 +2475,4 @@ c
       call rabcw(nlat,nlon,abc)
       return
       end
-
+      end module sp_sphcom

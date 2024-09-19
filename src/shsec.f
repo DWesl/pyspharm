@@ -305,6 +305,7 @@ c     walin must have 3*l*imid + 3*((l-3)*l+2)/2 locations
 c     zb must have 3*l*imid locations
 c
       use sp_hrfft, only: hrfftb
+      use sp_sphcom, only: alin
       dimension g(idgs,jdgs,1),a(mdab,ndab,1),b(mdab,ndab,1),
      1          ge(idg,jdg,1),go(idg,jdg,1),pb(imid,nlat,3),walin(1),
      3          whrfft(1),work(1)
@@ -461,6 +462,7 @@ c
 c ****************************************************************
       subroutine shseci(nlat,nlon,wshsec,lshsec,dwork,ldwork,ierror)
       use sp_hrfft, only: hrffti
+      use sp_sphcom, only: alinit
       dimension wshsec(*)
       double precision dwork(ldwork)
       ierror = 1

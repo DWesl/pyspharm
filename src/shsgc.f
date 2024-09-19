@@ -327,6 +327,7 @@ c     set pointers for internal storage of g and legendre polys
       subroutine shsgc1(nlat,nlon,l,lat,mode,gs,idg,jdg,nt,a,b,mdab,
      1                  ndab,w,wfft,late,pmn,g)
       use sp_hrfft, only: hrfftb
+      use sp_sphcom, only: legin
       dimension gs(idg,jdg,nt),a(mdab,ndab,nt),b(mdab,ndab,nt)
       dimension w(1),pmn(nlat,late,3),g(lat,nlon,nt),wfft(1)
 c     reconstruct fourier coefficients in g on gaussian grid
@@ -527,6 +528,7 @@ c     set indices in temp work for double precision gaussian wts and pts
       subroutine shsgci1(nlat,nlon,l,late,wts,p0n,p1n,abel,bbel,cbel,
      1                  wfft,dtheta,dwts,work,ier)
       use sp_hrfft, only: hrffti
+      use sp_sphcom, only: dnlft, dnlfk
       dimension wts(nlat),p0n(nlat,late),p1n(nlat,late),abel(1),bbel(1),
      1 cbel(1),wfft(1),dtheta(nlat),dwts(nlat)
       double precision pb,dtheta,dwts,work(*)

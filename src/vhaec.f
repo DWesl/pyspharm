@@ -355,6 +355,7 @@ c **********************************************************************
       subroutine vhaec1(nlat,nlon,ityp,nt,imid,idvw,jdvw,v,w,mdab,
      1   ndab,br,bi,cr,ci,idv,ve,vo,we,wo,zv,zw,wzvin,wzwin,wrfft)
       use sp_hrfft, only: hrfftf
+      use sp_sphcom, only: zwin, zvin
       dimension v(idvw,jdvw,1),w(idvw,jdvw,1),br(mdab,ndab,1),
      1          bi(mdab,ndab,1),cr(mdab,ndab,1),ci(mdab,ndab,1),
      2          ve(idv,nlon,1),vo(idv,nlon,1),we(idv,nlon,1),
@@ -875,6 +876,7 @@ c
       end
       subroutine vhaeci(nlat,nlon,wvhaec,lvhaec,dwork,ldwork,ierror)
       use sp_hrfft, only: hrffti
+      use sp_sphcom, only: zwinit, zvinit
       dimension wvhaec(lvhaec)
       double precision dwork(ldwork)
       ierror = 1

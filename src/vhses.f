@@ -1006,6 +1006,7 @@ c
       return
       end
       subroutine ves1(nlat,nlon,imid,vb,wb,idz,vin,wzvin,dwork)
+      use sp_sphcom, only: wbin, vbinit, vbin, wbinit
       dimension vb(imid,*),wb(imid,*),vin(imid,nlat,3),wzvin(*)
       double precision dwork(*)
       mmax = min0(nlat,(nlon+1)/2)

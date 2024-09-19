@@ -893,6 +893,7 @@ c     iw4 = iw3+6*imid*nlat
       return
       end
       subroutine vhgai1(nlat,imid,vb,wb,dthet,dwts,dpbar,work)
+      use sp_sphcom, only: dnlft, dnlfk
       dimension vb(imid,*),wb(imid,*)
       double precision abel,bbel,cbel,ssqr2,dcf
       double precision dpbar(imid,nlat,3), dthet(*),dwts(*),work(*)

@@ -880,6 +880,7 @@ c
       return
       end
       subroutine vea1(nlat,nlon,imid,zv,zw,idz,zin,wzvin,dwork)
+      use sp_sphcom, only: zwinit, zwin, zvinit, zvin
       dimension zv(idz,1),zw(idz,1),zin(imid,nlat,3),wzvin(1)
       double precision dwork(*)
       mmax = min0(nlat,(nlon+1)/2)

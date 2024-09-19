@@ -345,6 +345,7 @@ c     set pointers for internal storage of g and legendre polys
       subroutine shagc1(nlat,nlon,l,lat,mode,gs,idg,jdg,nt,a,b,mdab,
      1                  ndab,w,wts,wfft,late,pmn,g)
       use sp_hrfft, only: hrfftf
+      use sp_sphcom, only: legin
       dimension gs(idg,jdg,nt),a(mdab,ndab,nt),
      1          b(mdab,ndab,nt),g(lat,nlon,nt)
       dimension w(1),wts(nlat),wfft(1),pmn(nlat,late,3)
@@ -553,6 +554,7 @@ c     set indices in temp work for double precision gaussian wts and pts
       subroutine shagci1(nlat,nlon,l,late,wts,p0n,p1n,abel,bbel,cbel,
      1                  wfft,dtheta,dwts,work,ier)
       use sp_hrfft, only: hrffti
+      use sp_sphcom, only: dnlft, dnlfk
       dimension wts(nlat),p0n(nlat,late),p1n(nlat,late),abel(1),bbel(1),
      1 cbel(1),wfft(1)
       double precision pb,dtheta(nlat),dwts(nlat),work(*)
