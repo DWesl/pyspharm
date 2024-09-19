@@ -464,6 +464,7 @@ c *****************************************
 
       subroutine vhses1(nlat,nlon,ityp,nt,imid,idvw,jdvw,v,w,mdab,
      1   ndab,br,bi,cr,ci,idv,ve,vo,we,wo,work,idz,vb,wb,wrfft)
+      use sp_hrfft, only: hrfftb
       dimension v(idvw,jdvw,1),w(idvw,jdvw,1),br(mdab,ndab,1),
      1          bi(mdab,ndab,1),cr(mdab,ndab,1),ci(mdab,ndab,1),
      2          ve(idv,nlon,1),vo(idv,nlon,1),we(idv,nlon,1),
@@ -979,6 +980,7 @@ c
 
       subroutine vhsesi(nlat,nlon,wvhses,lvhses,work,lwork,dwork,
      +                  ldwork,ierror)
+      use sp_hrfft, only: hrffti
       dimension wvhses(lvhses),work(lwork)
       double precision dwork(ldwork)
       ierror = 1

@@ -347,6 +347,7 @@ c     set pointer for internal storage of g
 
       subroutine shags1(nlat,nlon,l,lat,mode,gs,idg,jdg,nt,a,b,mdab,
      1                  ndab,wts,wfft,pmn,late,g,work)
+      use sp_hrfft, only: hrfftf
       dimension gs(idg,jdg,nt),a(mdab,ndab,nt),
      1          b(mdab,ndab,nt),g(lat,nlon,nt)
       dimension wfft(1),pmn(late,1),wts(nlat),work(1)
@@ -641,6 +642,7 @@ c     iw = idwts+2*nlat
 
       subroutine shagsp1(nlat,nlon,l,late,wts,p0n,p1n,abel,bbel,cbel,
      +                   wfft,dtheta,dwts,work,ier)
+      use sp_hrfft, only: hrffti
       dimension wts(nlat),p0n(nlat,late),p1n(nlat,late),abel(1),bbel(1),
      1 cbel(1),wfft(1),dtheta(nlat),dwts(nlat)
       double precision pb,dtheta,dwts,work(*)

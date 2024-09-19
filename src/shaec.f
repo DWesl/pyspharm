@@ -328,6 +328,7 @@ c     wzfin must have 2*l*(nlat+1)/2 + ((l-3)*l+2)/2 locations
 c     zb must have 3*l*(nlat+1)/2 locations
 c     work must have ls*nlon locations
 c
+      use sp_hrfft, only: hrfftf
       dimension g(idgs,jdgs,1),a(mdab,ndab,1),b(mdab,ndab,1),
      1          ge(idg,jdg,1),go(idg,jdg,1),zb(imid,nlat,3),wzfin(1),
      3          whrfft(1),work(1)
@@ -430,6 +431,7 @@ c
       end
 
       subroutine shaeci(nlat,nlon,wshaec,lshaec,dwork,ldwork,ierror)
+      use sp_hrfft, only: hrffti
       dimension wshaec(lshaec)
       double precision dwork(ldwork)
       ierror = 1

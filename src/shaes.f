@@ -338,6 +338,7 @@ c ****************************************************************
       end
       subroutine shaes1(nlat,isym,nt,g,idgs,jdgs,a,b,mdab,ndab,z,idz,
      1                  idg,jdg,ge,go,work,whrfft)
+      use sp_hrfft, only: hrfftf
       dimension g(idgs,jdgs,1),a(mdab,ndab,1),b(mdab,ndab,1),z(idz,1),
      1          ge(idg,jdg,1),go(idg,jdg,1),work(1),whrfft(1)
       ls = idg
@@ -439,6 +440,7 @@ c ****************************************************************
 
       subroutine shaesi(nlat,nlon,wshaes,lshaes,work,lwork,dwork,
      +                  ldwork,ierror)
+      use sp_hrfft, only: hrffti
       dimension wshaes(*),work(*)
       double precision dwork(*)
 c

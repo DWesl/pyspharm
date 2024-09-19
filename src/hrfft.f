@@ -186,6 +186,10 @@ c **********************************************************************
 c
 c
 c
+      module sp_hrfft
+      private
+      public :: hrfftf, hrffti, hrfftb
+      contains
       subroutine hrffti (n,wsave)
       dimension       wsave(n+15)                                              
       common /hrf/ tfft
@@ -1366,3 +1370,4 @@ c
   103 continue         
       return           
       end              
+      end module sp_hrfft

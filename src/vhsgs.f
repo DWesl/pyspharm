@@ -465,6 +465,7 @@ c
 
       subroutine vhsgs1(nlat,nlon,ityp,nt,imid,idvw,jdvw,v,w,mdab,
      1   ndab,br,bi,cr,ci,idv,ve,vo,we,wo,work,idz,vb,wb,wrfft)
+      use sp_hrfft, only: hrfftb
       dimension v(idvw,jdvw,1),w(idvw,jdvw,1),br(mdab,ndab,1),
      1          bi(mdab,ndab,1),cr(mdab,ndab,1),ci(mdab,ndab,1),
      2          ve(idv,nlon,1),vo(idv,nlon,1),we(idv,nlon,1),
@@ -1004,6 +1005,7 @@ c       3*nlat*(nlat+1)+5*nlat+1 = nlat*(3*nlat+8)+1
 c     locations which is determined by the size of dthet, 
 c     dwts, dwork, and dpbar in vhsgs1
 c
+      use sp_hrfft, only: hrffti
       dimension wvhsgs(*)
       double precision dwork(*)
       ierror = 1

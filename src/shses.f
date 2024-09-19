@@ -315,6 +315,7 @@ c ****************************************************************
       end
       subroutine shses1(nlat,isym,nt,g,idgs,jdgs,a,b,mdab,ndab,p,imid,
      1                  idg,jdg,ge,go,work,whrfft)
+      use sp_hrfft, only: hrfftb
       dimension g(idgs,jdgs,1),a(mdab,ndab,1),b(mdab,ndab,1),p(imid,1),
      1          ge(idg,jdg,1),go(idg,jdg,1),work(1),whrfft(1)
       ls = idg
@@ -415,6 +416,7 @@ c ****************************************************************
 
       subroutine shsesi(nlat,nlon,wshses,lshses,work,lwork,dwork,
      +                  ldwork,ierror)
+      use sp_hrfft, only: hrffti
       dimension wshses(*),work(*)
       double precision dwork(*)
       ierror = 1

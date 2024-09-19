@@ -323,6 +323,7 @@ c     set pointer for internal storage of g
 
       subroutine shsgs1(nlat,nlon,l,lat,mode,gs,idg,jdg,nt,a,b,mdab,
      1                  ndab,wfft,pmn,late,g,work)
+      use sp_hrfft, only: hrfftb
       dimension gs(idg,jdg,nt),a(mdab,ndab,nt),b(mdab,ndab,nt)
       dimension wfft(1),pmn(late,1),g(lat,nlon,nt),work(1)
 
@@ -611,6 +612,7 @@ c     iw = idwts+2*nlat
       end
       subroutine shsgsp1(nlat,nlon,l,late,wts,p0n,p1n,abel,bbel,cbel,
      +                   wfft,dtheta,dwts,work,ier)
+      use sp_hrfft, only: hrffti
       dimension wts(nlat),p0n(nlat,late),p1n(nlat,late),abel(1),bbel(1),
      1 cbel(1),wfft(1),dtheta(nlat),dwts(nlat)
       double precision pb,dtheta,dwts,work(*)

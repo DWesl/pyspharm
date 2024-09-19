@@ -357,6 +357,7 @@ c
 
       subroutine vhaes1(nlat,nlon,ityp,nt,imid,idvw,jdvw,v,w,mdab,
      1   ndab,br,bi,cr,ci,idv,ve,vo,we,wo,work,idz,zv,zw,wrfft)
+      use sp_hrfft, only: hrfftf
       dimension v(idvw,jdvw,1),w(idvw,jdvw,1),br(mdab,ndab,1),
      1          bi(mdab,ndab,1),cr(mdab,ndab,1),ci(mdab,ndab,1),
      2          ve(idv,nlon,1),vo(idv,nlon,1),we(idv,nlon,1),
@@ -853,6 +854,7 @@ c     dwork must be of length at least 2*(nlat+1)
 c
       subroutine vhaesi(nlat,nlon,wvhaes,lvhaes,work,lwork,dwork,
      +                  ldwork,ierror)
+      use sp_hrfft, only: hrffti
       dimension wvhaes(lvhaes),work(lwork)
       double precision dwork(ldwork)
       ierror = 1
