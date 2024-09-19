@@ -174,7 +174,7 @@ c
       wts(i) = 2.0d0*wts(i)/sum
       end do
       return
-      end
+      contains
       subroutine cpdp(n,cz,cp,dcp)
 c
 c     computes the fourier coefficients of the legendre
@@ -313,3 +313,4 @@ C     eps = epsilon(x)  ! F90+
       dzeps = real(eps*dabs(x))
       return
       end
+      end subroutine gaqd
