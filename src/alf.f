@@ -291,7 +291,7 @@ c
       subroutine lfim1(init,theta,l,n,nm,id,p3,phz,ph1,p1,p2,cp)
       dimension       p1(l,3)    ,p2(l,3)    ,p3(id,3)   ,
      C                phz(l,max(3, nm+1))   ,
-     1                ph1(l,3)   ,cp(1)      ,theta(l)
+     1                ph1(l,3)   ,cp(n/2+1)      ,theta(l)
       nmp1 = nm+1
       if(init .eq. 0) then ! go to 5
       ssqrt2 = 1./sqrt(2.)
@@ -477,7 +477,7 @@ c                        a four term recurrence relation. (unpublished
 c                        notes by paul n. swarztrauber)
 c
       subroutine lfin (init,theta,l,m,nm,pb,id,wlfin)
-      dimension       pb(1)        ,wlfin(1)
+      dimension       pb(id, nm+1)        ,wlfin(4*l*(nm+1))
       dimension theta(l)
 c
 c     total length of wlfin is 4*l*(nm+1)
@@ -486,13 +486,14 @@ c
       iw1 = lnx+1
       iw2 = iw1+lnx
       iw3 = iw2+lnx
-      call lfin1(init,theta,l,m,nm,id,pb,wlfin,wlfin(iw1),
-     1                wlfin(iw2),wlfin(iw3),wlfin(iw2))
+      call lfin1(init,theta,l,m,nm,id,pb,wlfin(1:iw1-1),
+     1                wlfin(iw1:iw2-1),wlfin(iw2:iw3-1),wlfin(iw3:),
+     2                wlfin(iw2:iw3-1))
       return
       contains
       subroutine lfin1(init,theta,l,m,nm,id,p3,phz,ph1,p1,p2,cp)
-      dimension       p1(l,1)    ,p2(l,2)    ,p3(id,2)   ,phz(l,2)   ,
-     1                ph1(l,2)   ,cp(1)      ,theta(l)
+      dimension       p1(l,nm+1) ,p2(l,nm+1) ,p3(l,nm+1),phz(l,nm+1)   ,
+     1                ph1(l,2)   ,cp(:)  ,theta(l)
       nmp1 = nm+1
       if(init .eq. 0) then
       ssqrt2 = 1./sqrt(2.)

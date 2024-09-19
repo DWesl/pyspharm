@@ -179,7 +179,7 @@ c     pb = pb+cp(k)*dsin((2*k-1)*theta)
 c
 c     computes the derivative of pmn(theta) with respect to theta
 c
-      dimension cp(1)
+      dimension cp(n/2+1)
       double precision cp,pb,theta,cdt,sdt,cth,sth,chh
       cdt = dcos(theta+theta)
       sdt = dsin(theta+theta)
@@ -352,7 +352,7 @@ c
       return
       end
       subroutine zfin1 (isym,nlat,m,z,imid,i3,zz,z1,a,b,c)
-      dimension       z(imid,nlat,3),zz(imid,1),z1(imid,1),
+      dimension       z(imid,nlat,3),zz(imid,1),z1(imid,nlat),
      1                a(1),b(1),c(1)
       save i1,i2
       ihold = i1
@@ -441,7 +441,7 @@ c     dnzfk computes the coefficients in the trigonometric
 c     expansion of the z functions that are used in spherical
 c     harmonic analysis.
 c
-      dimension  cz(1),work(1)
+      dimension  cz(nlat/2+1),work(nlat/2+1)
 c
 c     cz and work must both have nlat/2+1 locations
 c
@@ -518,7 +518,7 @@ c
       return
       end
       subroutine dnzft(nlat,m,n,th,cz,zh)
-      dimension cz(1)
+      dimension cz((nlat-2)/2)
       double precision cz,zh,th,cdt,sdt,cth,sth,chh
       zh = 0.
       cdt = dcos(th+th)
@@ -664,7 +664,7 @@ c
       return
       end
       subroutine alin1 (isym,nlat,m,p,imid,i3,pz,p1,a,b,c)
-      dimension       p(imid,nlat,3),pz(imid,1),p1(imid,1),
+      dimension       p(imid,nlat,3),pz(imid,1),p1(imid,nlat),
      1                a(1),b(1),c(1)
       save i1,i2
       ihold = i1
@@ -862,16 +862,16 @@ c
       return
       end
       subroutine zwinit (nlat,nlon,wzwin,dwork)
-      dimension       wzwin(1)
-      double precision dwork(*)
+      dimension       wzwin(nlat*(nlat+1)+3*((nlat-3)*nlat+2)/2)
+      double precision dwork(nlat+1)
       imid = (nlat+1)/2
       iw1 = 2*nlat*imid+1
 c
 c     the length of wzvin is 2*nlat*imid+3*((nlat-3)*nlat+2)/2
 c     the length of dwork is nlat+2
 c
-      call zwini1 (nlat,nlon,imid,wzwin,wzwin(iw1),dwork,
-     1                                        dwork(nlat/2+2))
+      call zwini1 (nlat,nlon,imid,wzwin(1:iw1-1),wzwin(iw1:),
+     1                          dwork(:nlat/2+1),dwork(nlat/2+2:))
       return
       end
       subroutine zwini1 (nlat,nlon,imid,zw,abc,czw,work)
@@ -880,8 +880,8 @@ c     abc must have 3*(max0(mmax-2,0)*(nlat+nlat-mmax-1))/2
 c     locations where mmax = min0(nlat,(nlon+1)/2)
 c     czw and work must each have nlat+1 locations
 c
-      dimension zw(imid,nlat,2),abc(1)
-      double precision  pi,dt,czw(1),zwh,th,work(1)
+      dimension zw(imid,nlat,2),abc(:)
+      double precision  pi,dt,czw(nlat+1),zwh,th,work(nlat+1)
       pi = 4.*datan(1.d0)
       dt = pi/(nlat-1)
       mdo = min0(3,nlat,(nlon+1)/2)
@@ -902,7 +902,7 @@ c
       return
       end
       subroutine zvin (ityp,nlat,nlon,m,zv,i3,wzvin)
-      dimension       zv(1)        ,wzvin(1)
+      dimension       zv(1)        ,wzvin(:)
       imid = (nlat+1)/2
       lim = nlat*imid
       mmax = min0(nlat,(nlon+1)/2)
@@ -914,13 +914,13 @@ c
 c
 c     the length of wzvin is 2*lim+3*labc
 c
-      call zvin1 (ityp,nlat,m,zv,imid,i3,wzvin,wzvin(iw1),wzvin(iw2),
-     1            wzvin(iw3),wzvin(iw4))
+      call zvin1(ityp,nlat,m,zv,imid,i3,wzvin(1:iw1-1),wzvin(iw1:iw2-1),
+     1           wzvin(iw2:iw3-1),wzvin(iw3:iw4-1),wzvin(iw4:))
       return
       end
       subroutine zvin1 (ityp,nlat,m,zv,imid,i3,zvz,zv1,a,b,c)
-      dimension       zv(imid,nlat,3),zvz(imid,1),zv1(imid,1),
-     1                a(1),b(1),c(1)
+      dimension       zv(imid,nlat,3),zvz(imid,nlat),zv1(imid,nlat),
+     1                a(:),b(:),c(:)
       save i1,i2
       ihold = i1
       i1 = i2
@@ -977,13 +977,13 @@ c
 c
 c     the length of wzwin is 2*lim+3*labc
 c
-      call zwin1 (ityp,nlat,m,zw,imid,i3,wzwin,wzwin(iw1),wzwin(iw2),
-     1            wzwin(iw3),wzwin(iw4))
+      call zwin1(ityp,nlat,m,zw,imid,i3,wzwin(1:iw1-1),wzwin(iw1:iw2-1),
+     1           wzwin(iw2:iw3-1),wzwin(iw3:iw4-1),wzwin(iw4:))
       return
       end
       subroutine zwin1 (ityp,nlat,m,zw,imid,i3,zw1,zw2,a,b,c)
-      dimension       zw(imid,nlat,3),zw1(imid,1),zw2(imid,1),
-     1                a(1),b(1),c(1)
+      dimension       zw(imid,nlat,3),zw1(imid,nlat),zw2(imid,nlat),
+     1                a(:),b(:),c(:)
       save i1,i2
       ihold = i1
       i1 = i2
@@ -1117,13 +1117,14 @@ c
 c
 c     the length of wvbin is 2*lim+3*labc
 c
-      call vbin1 (ityp,nlat,m,vb,imid,i3,wvbin,wvbin(iw1),wvbin(iw2),
-     1            wvbin(iw3),wvbin(iw4))
+      call vbin1 (ityp,nlat,m,vb,imid,i3,wvbin(1:iw1-1),
+     1            wvbin(iw1:iw2-1),wvbin(iw2:iw3-1),wvbin(iw3:iw4-1),
+     2            wvbin(iw4:))
       return
       end
       subroutine vbin1 (ityp,nlat,m,vb,imid,i3,vbz,vb1,a,b,c)
-      dimension       vb(imid,nlat,3),vbz(imid,1),vb1(imid,1),
-     1                a(1),b(1),c(1)
+      dimension       vb(imid,nlat,3),vbz(imid,1),vb1(imid,nlat),
+     1                a(:),b(:),c(:)
       save i1,i2
       ihold = i1
       i1 = i2
@@ -1180,13 +1181,14 @@ c
 c
 c     the length of wwbin is 2*lim+3*labc
 c
-      call wbin1 (ityp,nlat,m,wb,imid,i3,wwbin,wwbin(iw1),wwbin(iw2),
-     1            wwbin(iw3),wwbin(iw4))
+      call wbin1 (ityp,nlat,m,wb,imid,i3,wwbin(1:iw1-1),
+     1            wwbin(iw1:iw2-1),wwbin(iw2:iw3-1),wwbin(iw3:iw4-1),
+     2            wwbin(iw4:))
       return
       end
       subroutine wbin1 (ityp,nlat,m,wb,imid,i3,wb1,wb2,a,b,c)
-      dimension       wb(imid,nlat,3),wb1(imid,1),wb2(imid,1),
-     1                a(1),b(1),c(1)
+      dimension       wb(imid,nlat,3),wb1(imid,nlat),wb2(imid,nlat),
+     1                a(:),b(:),c(:)
       save i1,i2
       ihold = i1
       i1 = i2
@@ -1341,7 +1343,7 @@ c     output parameter
 c
 c     zvh     zvbar(m,n,theta) evaluated at theta = th
 c
-      dimension czv(1)
+      dimension czv((nlat-1)/2)
       double precision th,czv,zvh,cth,sth,cdt,sdt,chh
       zvh = 0.
       if(n .le. 0) return
@@ -1470,7 +1472,7 @@ c     output parameter
 c
 c     czw     the fourier coefficients of zwbar(n,m,theta).
 c
-      dimension czw(1),work(1)
+      dimension czw(1),work(nlat/2+1)
       double precision czw,work,sc1,sum,t1,t2
       if(n .le. 0) return
       lc = (nlat+1)/2
@@ -1565,7 +1567,7 @@ c     output parameter
 c
 c     zwh     zwbar(m,n,theta) evaluated at theta = th
 c
-      dimension czw(1)
+      dimension czw((nlat+1)/2)
       double precision czw,zwh,th,cth,sth,cdt,sdt,chh
       zwh = 0.
       if(n .le. 0) return
@@ -1676,7 +1678,7 @@ c
       return
       end
       subroutine dvbk(m,n,cv,work)
-      double precision cv(1),work(1),fn,fk,cf
+      double precision cv((n+1)/2),work((n+1)/2),fn,fk,cf
       cv(1) = 0.
       if(n .le. 0) return
       fn = n
@@ -1841,7 +1843,7 @@ c
       return
       end
       subroutine dwbt(m,n,theta,cw,wh)
-      dimension cw(1)
+      dimension cw((n+1)/2)
       double precision theta,cw,wh,cth,sth,cdt,sdt,chh
       wh = 0.
       if(n.le.0 .or. m.le.0) return
@@ -2339,7 +2341,7 @@ c
       return
       end
       subroutine dwtt(m,n,theta,cw,wh)
-      dimension cw(1)
+      dimension cw((n+1)/2)
       double precision theta,cw,wh,cth,sth,cdt,sdt,chh
       wh = 0.
       if(n.le.0 .or. m.le.0) return
