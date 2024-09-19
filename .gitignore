@@ -1,6 +1,7 @@
 # Built object files
 src/*.o
 *.o
+src/*.mod
 
 # Python build system intermediate files
 /build/

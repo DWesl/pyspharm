@@ -98,6 +98,10 @@ c                        of input parameter n.  agreement to 14
 c                        places was obtained for n=10 and to 13
 c                        places for n=100.
 c
+      module sp_alf
+      private
+      public :: alfk, lfpt
+      contains
       subroutine alfk (n,m,cp)
       dimension       cp(n/2+1)
       parameter (sc10=1024.)
@@ -283,7 +287,7 @@ c
       call lfim1(init,theta,l,n,nm,id,pb,wlfim,wlfim(iw1),
      1                wlfim(iw2),wlfim(iw3),wlfim(iw2))
       return
-      end
+      contains
       subroutine lfim1(init,theta,l,n,nm,id,p3,phz,ph1,p1,p2,cp)
       dimension       p1(l,3)    ,p2(l,3)    ,p3(id,3)   ,
      C                phz(l,max(3, nm+1))   ,
@@ -380,6 +384,7 @@ c
  901  enddo
       return
       end
+      end subroutine lfim
 c subroutine lfin (init,theta,l,m,nm,pb,id,wlfin)
 c
 c dimension of           theta(l),  pb(id,nm+1),  wlfin(4*l*(nm+1))
@@ -484,7 +489,7 @@ c
       call lfin1(init,theta,l,m,nm,id,pb,wlfin,wlfin(iw1),
      1                wlfin(iw2),wlfin(iw3),wlfin(iw2))
       return
-      end
+      contains
       subroutine lfin1(init,theta,l,m,nm,id,p3,phz,ph1,p1,p2,cp)
       dimension       p1(l,1)    ,p2(l,2)    ,p3(id,2)   ,phz(l,2)   ,
      1                ph1(l,2)   ,cp(1)      ,theta(l)
@@ -567,6 +572,7 @@ c
       return
       endif
       end
+      end subroutine lfin
 c subroutine lfpt (n,m,theta,cp,pb)
 c
 c dimension of
@@ -710,3 +716,4 @@ c
       endif ! 15 (n .le. 0) .and. (ma .le. 0)
   140 return
       end
+      end module sp_alf

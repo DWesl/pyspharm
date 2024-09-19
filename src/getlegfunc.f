@@ -1,4 +1,5 @@
       subroutine getlegfunc(legfunc,lat,ntrunc)
+      use sp_alf, only: alfk, lfpt
       integer ntrunc,m,n,nmstrt
       real lat,theta,pi,
      *     legfunc((ntrunc+1)*(ntrunc+2)/2),cp((ntrunc/2)+1)
