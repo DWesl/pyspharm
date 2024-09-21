@@ -103,7 +103,8 @@ c
       public :: alfk, lfpt
       contains
       subroutine alfk (n,m,cp)
-      dimension       cp(n/2+1)
+      integer, intent(in) :: n, m
+      real, intent(out), dimension(n/2+1) :: cp
       parameter (sc10=1024.)
       parameter (sc20=sc10*sc10)
       parameter (sc40=sc20*sc20)
@@ -275,8 +276,10 @@ c                        a four term recurrence relation. (unpublished
 c                        notes by paul n. swarztrauber)
 c
       subroutine lfim (init,theta,l,n,nm,pb,id,wlfim)
-      dimension       pb(id, nm+1)        ,wlfim(4*l*(nm+1))
-      dimension theta(l)
+      integer, intent(in) :: init, l, n, nm, id
+      real, intent(out), dimension(id, nm+1) :: pb
+      real, intent(inout), dimension(4*l*(nm+1)) :: wlfim
+      real, intent(in), dimension(l) :: theta
 c
 c     total length of wlfim is 4*l*(nm+1)
 c
@@ -284,14 +287,18 @@ c
       iw1 = lnx+1
       iw2 = iw1+lnx
       iw3 = iw2+lnx
-      call lfim1(init,theta,l,n,nm,id,pb,wlfim,wlfim(iw1),
-     1                wlfim(iw2),wlfim(iw3),wlfim(iw2))
+      call lfim1(init,theta,l,n,nm,id,pb,wlfim(1:iw1-1),
+     1               wlfim(iw1:iw2-1),wlfim(iw2:iw3-1),wlfim(iw3:),
+     2               wlfim(iw2:iw3-1))
       return
       contains
       subroutine lfim1(init,theta,l,n,nm,id,p3,phz,ph1,p1,p2,cp)
-      dimension       p1(l,3)    ,p2(l,3)    ,p3(id,3)   ,
+      integer, intent(in) :: init, l, n, nm, id
+      real, intent(in), dimension(l) :: theta
+      real, intent(out), dimension(id, nm+1) :: p3
+      dimension       p1(l,3)    ,p2(l,3)    ,
      C                phz(l,max(3, nm+1))   ,
-     1                ph1(l,3)   ,cp(n/2+1)      ,theta(l)
+     1                ph1(l,3)   ,cp(n/2+1)
       nmp1 = nm+1
       if(init .eq. 0) then ! go to 5
       ssqrt2 = 1./sqrt(2.)
@@ -477,8 +484,10 @@ c                        a four term recurrence relation. (unpublished
 c                        notes by paul n. swarztrauber)
 c
       subroutine lfin (init,theta,l,m,nm,pb,id,wlfin)
-      dimension       pb(id, nm+1)        ,wlfin(4*l*(nm+1))
-      dimension theta(l)
+      integer, intent(in) :: init, l, m, nm, id
+      real, intent(inout), dimension(4*l*(nm+1)) :: wlfin
+      real, intent(out), dimension(id, nm+1) :: pb
+      real, intent(in), dimension(l) :: theta
 c
 c     total length of wlfin is 4*l*(nm+1)
 c
@@ -492,8 +501,11 @@ c
       return
       contains
       subroutine lfin1(init,theta,l,m,nm,id,p3,phz,ph1,p1,p2,cp)
-      dimension       p1(l,nm+1) ,p2(l,nm+1) ,p3(l,nm+1),phz(l,nm+1)   ,
-     1                ph1(l,2)   ,cp(:)  ,theta(l)
+      integer, intent(in) :: init, l, m, nm, id
+      real, intent(in), dimension(l) :: theta
+      real, intent(out), dimension(id, nm+1) :: p3
+      real, intent(inout), dimension(l, nm+1) :: phz, ph1, p1, p2
+      real, intent(inout), dimension(nm+1) :: cp
       nmp1 = nm+1
       if(init .eq. 0) then
       ssqrt2 = 1./sqrt(2.)
@@ -643,7 +655,11 @@ c timing                 time per call to routine lfpt is dependent on
 c                        the input parameter n.
 c
       subroutine lfpt (n,m,theta,cp,pb)
-      dimension       cp(n/2+1)
+      integer, intent(in) :: n, m
+      real, intent(in) :: theta
+      real, intent(out) :: pb
+      real, intent(in), dimension(n/2+1) :: cp
+
 c
       pb = 0.
       ma = iabs(m)
