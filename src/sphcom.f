@@ -26,12 +26,13 @@ c
       public :: vbgint, wbgint, sea1, ses1
       contains
       subroutine dnlfk (m,n,cp)
+      integer, intent(in) :: m, n
+      double precision, intent(out), dimension(n/2+1) :: cp
 c
 c     cp requires n/2+1 double precision locations
 c
-      double precision cp,fnum,fden,fnmh,a1,b1,c1,cp2,fnnp1,fnmsq,fk,
+      double precision fnum,fden,fnmh,a1,b1,c1,cp2,fnnp1,fnmsq,fk,
      1       t1,t2,pm1,sc10,sc20,sc40
-      dimension       cp(1)
       parameter (sc10=1024.d0)
       parameter (sc20=sc10*sc10)
       parameter (sc40=sc20*sc20)
@@ -176,11 +177,14 @@ c     pb = pb+cp(k)*dsin((2*k-1)*theta)
       return
       end
       subroutine dnlftd (m,n,theta,cp,pb)
+      integer, intent(in) :: m, n
+      double precision, intent(in) :: theta
+      double precision, intent(in), dimension(n/2+1) :: cp
+      double precision, intent(out) :: pb
 c
 c     computes the derivative of pmn(theta) with respect to theta
 c
-      dimension cp(n/2+1)
-      double precision cp,pb,theta,cdt,sdt,cth,sth,chh
+      double precision cdt,sdt,cth,sth,chh
       cdt = dcos(theta+theta)
       sdt = dsin(theta+theta)
       nmod=mod(n,2)
@@ -258,7 +262,10 @@ c     the vector w contains quantities precomputed in shigc.
 c     legin must be called in the order m=0,1,...,l-1
 c     (e.g., if m=10 is sought it must be preceded by calls with
 c     m=0,1,2,...,9 in that order)
-      dimension w(1),pmn(1)
+      integer, intent(in) :: mode, l, nlat, m
+      real, intent(in), dimension(nlat*(2+nlat)+(2*nlat-l)*(l-1)) :: w
+      real, intent(out), dimension(l, (nlat+1)/2, 3) :: pmn
+      integer, intent(out) :: km
 c     set size of pole to equator gaussian grid
       late = (nlat+mod(nlat,2))/2
 c     partition w (set pointers for p0n,p1n,abel,bbel,cbel,pmn)
@@ -267,14 +274,17 @@ c     partition w (set pointers for p0n,p1n,abel,bbel,cbel,pmn)
       i3 = i2+nlat*late
       i4 = i3+(2*nlat-l)*(l-1)/2
       i5 = i4+(2*nlat-l)*(l-1)/2
-      call legin1(mode,l,nlat,late,m,w(i1),w(i2),w(i3),w(i4),
-     1            w(i5),pmn,km)
+      call legin1(mode,l,nlat,late,m,w(i1:i2-1),w(i2:i3-1),w(i3:i4-1),
+     1            w(i4:i5-1),w(i5:),pmn,km)
       return
       end
       subroutine legin1(mode,l,nlat,late,m,p0n,p1n,abel,bbel,cbel,
      1                  pmn,km)
-      dimension p0n(nlat,late),p1n(nlat,late)
-      dimension abel(1),bbel(1),cbel(1),pmn(nlat,late,3)
+      integer, intent(in) :: mode, l, nlat, late, m
+      real, intent(in), dimension(nlat, late) :: p0n, p1n
+      real, intent(in), dimension((2*nlat-l)*(l-1)/2) :: abel, bbel,cbel
+      real, intent(out), dimension(nlat, late, 3) :: pmn
+      integer, intent(out) :: km
       data km0,km1,km2/ 1,2,3/
       save km0,km1,km2
 c     define index function used in storing triangular
@@ -335,7 +345,10 @@ c     set current m index in output param km
 
 
       subroutine zfin (isym,nlat,nlon,m,z,i3,wzfin)
-      dimension       z(1)        ,wzfin(1)
+      integer :: isym, i3
+      integer, intent(in) :: nlat, nlon, m
+      real, dimension((nlat+1)/2,nlat,3) :: z
+      real, dimension(:) :: wzfin
       imid = (nlat+1)/2
       lim = nlat*imid
       mmax = min0(nlat,nlon/2+1)
@@ -347,13 +360,17 @@ c     set current m index in output param km
 c
 c     the length of wzfin is 2*lim+3*labc
 c
-      call zfin1 (isym,nlat,m,z,imid,i3,wzfin,wzfin(iw1),wzfin(iw2),
-     1            wzfin(iw3),wzfin(iw4))
+      call zfin1 (isym,nlat,m,z,imid,i3,wzfin(1:iw1-1),wzfin(iw1:iw2-1),
+     1            wzfin(iw2:iw3-1),wzfin(iw3:iw4-1),wzfin(iw4:))
       return
       end
       subroutine zfin1 (isym,nlat,m,z,imid,i3,zz,z1,a,b,c)
-      dimension       z(imid,nlat,3),zz(imid,1),z1(imid,nlat),
-     1                a(1),b(1),c(1)
+      integer, intent(in) :: isym
+      integer, intent(in) :: nlat, m, imid
+      integer, intent(inout) :: i3
+      real, intent(out), dimension(imid, nlat, 3) :: z
+      real, intent(in), dimension(imid, nlat) :: zz, z1
+      real, intent(in), dimension(:) :: a, b, c
       save i1,i2
       ihold = i1
       i1 = i2
@@ -398,16 +415,17 @@ c
    80 return
       end
       subroutine zfinit (nlat,nlon,wzfin,dwork)
-      dimension       wzfin(*)
-      double precision dwork(*)
+      integer, intent(in) :: nlat, nlon
+      dimension       wzfin(3*((nlat-3)*nlat+2)/2 + (nlat+1)*nlat)
+      double precision, intent(out), dimension(nlat+2) :: dwork
       imid = (nlat+1)/2
       iw1 = 2*nlat*imid+1
 c
 c     the length of wzfin is 3*((l-3)*l+2)/2 + 2*l*imid
 c     the length of dwork is nlat+2
 c
-      call zfini1 (nlat,nlon,imid,wzfin,wzfin(iw1),dwork,
-     1                                       dwork(nlat/2+1))
+      call zfini1(nlat,nlon,imid,wzfin(1:iw1-1),wzfin(iw1:),
+     1                                 dwork(1:nlat/2),dwork(nlat/2+1:))
       return
       end
       subroutine zfini1 (nlat,nlon,imid,z,abc,cz,work)
@@ -416,9 +434,12 @@ c     abc must have 3*((mmax-2)*(nlat+nlat-mmax-1))/2 locations
 c     where mmax = min0(nlat,nlon/2+1)
 c     cz and work must each have nlat+1 locations
 c
-      dimension z(imid,nlat,2),abc(1)
-      double precision pi,dt,th,zh,cz(*),work(*)
-      pi = 4.*datan(1.d0)
+      integer, intent(in) :: nlat, nlon, imid
+      real, intent(out), dimension(imid, nlat, 2) :: z
+      real, dimension(:) :: abc
+      double precision, intent(out), dimension(nlat+1) :: work, cz
+      double precision dt,th,zh
+      double precision, parameter :: pi = 4.0d0*datan(1.d0)
       dt = pi/(nlat-1)
       do 160 mp1=1,2
       m = mp1-1
@@ -441,11 +462,13 @@ c     dnzfk computes the coefficients in the trigonometric
 c     expansion of the z functions that are used in spherical
 c     harmonic analysis.
 c
-      dimension  cz(nlat/2+1),work(nlat/2+1)
+      integer, intent(in) :: nlat, m, n
+C     The name work implies intent(out), but I can't tell
+      double precision, intent(out), dimension(nlat/2+1) :: work, cz
 c
 c     cz and work must both have nlat/2+1 locations
 c
-      double precision sum,sc1,t1,t2,work,cz
+      double precision sum,sc1,t1,t2
       lc = (nlat+1)/2
       sc1 = 2.d0/float(nlat-1)
       call dnlfk(m,n,work)
@@ -518,8 +541,11 @@ c
       return
       end
       subroutine dnzft(nlat,m,n,th,cz,zh)
-      dimension cz((nlat-2)/2)
-      double precision cz,zh,th,cdt,sdt,cth,sth,chh
+      integer, intent(in) :: nlat, m, n
+      double precision, intent(in) :: th
+      double precision, intent(in), dimension((nlat-2)/2) :: cz
+      double precision, intent(out) :: zh
+      double precision cdt,sdt,cth,sth,chh
       zh = 0.
       cdt = dcos(th+th)
       sdt = dsin(th+th)
@@ -647,7 +673,10 @@ c     zh = zh+cz(k+1)*dsin((2*k-1)*th)
       return
       end
       subroutine alin (isym,nlat,nlon,m,p,i3,walin)
-      dimension       p(1)        ,walin(1)
+      integer, intent(in) :: isym, nlat, nlon, m
+      real, intent(out), dimension((nlat+1)/2, nlat, 3) :: p
+      integer, intent(inout) :: i3
+      real, intent(in), dimension(((5*nlat-7)*nlat+6)/2) :: walin
       imid = (nlat+1)/2
       lim = nlat*imid
       mmax = min0(nlat,nlon/2+1)
@@ -659,13 +688,16 @@ c     zh = zh+cz(k+1)*dsin((2*k-1)*th)
 c
 c     the length of walin is ((5*l-7)*l+6)/2
 c
-      call alin1 (isym,nlat,m,p,imid,i3,walin,walin(iw1),walin(iw2),
-     1            walin(iw3),walin(iw4))
+      call alin1 (isym,nlat,m,p,imid,i3,walin(1:iw1-1),walin(iw1:iw2-1),
+     1            walin(iw2:iw3-1),walin(iw3:iw4-1),walin(iw4:))
       return
       end
       subroutine alin1 (isym,nlat,m,p,imid,i3,pz,p1,a,b,c)
-      dimension       p(imid,nlat,3),pz(imid,1),p1(imid,nlat),
-     1                a(1),b(1),c(1)
+      integer, intent(in) :: isym, nlat, m, imid
+      real, intent(out), dimension(imid, nlat, 3) :: p
+      integer, intent(inout) :: i3
+      real, intent(in), dimension(imid, nlat) :: pz, p1
+      real, intent(in), dimension(:) :: a, b, c
       save i1,i2
       ihold = i1
       i1 = i2
@@ -710,21 +742,25 @@ c
    80 return
       end
       subroutine alinit (nlat,nlon,walin,dwork)
-      dimension       walin(*)
-      double precision dwork(*)
+      integer, intent(in) :: nlat, nlon
+      real, intent(out), dimension(:) :: walin
+      double precision, intent(out), dimension(nlat+1) :: dwork
       imid = (nlat+1)/2
       iw1 = 2*nlat*imid+1
 c
 c     the length of walin is 3*((l-3)*l+2)/2 + 2*l*imid
 c     the length of work is nlat+1
 c
-      call alini1 (nlat,nlon,imid,walin,walin(iw1),dwork)
+      call alini1 (nlat,nlon,imid,walin(1:iw1-1),walin(iw1:),dwork)
       return
       end
       subroutine alini1 (nlat,nlon,imid,p,abc,cp)
-      dimension p(imid,nlat,2),abc(1),cp(1)
-      double precision pi,dt,th,cp,ph
-      pi = 4.*datan(1.d0)
+      integer, intent(in) :: nlat, nlon, imid
+      real, intent(out), dimension(imid, nlat, 2) :: p
+      real, intent(out), dimension(:) :: abc
+      double precision, intent(out), dimension(nlat+1) :: cp
+      double precision dt,th,ph
+      double precision, parameter :: pi = 4.0d0*datan(1.d0)
       dt = pi/(nlat-1)
       do 160 mp1=1,2
       m = mp1-1
@@ -740,25 +776,27 @@ c
       return
       end
       subroutine rabcp(nlat,nlon,abc)
+      integer, intent(in) :: nlat, nlon
+      real, intent(out), dimension(:) :: abc
 c
 c     subroutine rabcp computes the coefficients in the recurrence
 c     relation for the associated legendre fuctions. array abc
 c     must have 3*((mmax-2)*(nlat+nlat-mmax-1))/2 locations.
 c
-      dimension abc(1)
       mmax = min0(nlat,nlon/2+1)
       labc = ((mmax-2)*(nlat+nlat-mmax-1))/2
       iw1 = labc+1
       iw2 = iw1+labc
-      call rabcp1(nlat,nlon,abc,abc(iw1),abc(iw2))
+      call rabcp1(nlat,nlon,abc(1:iw1-1),abc(iw1:iw2-1),abc(iw2:))
       return
       end
       subroutine rabcp1(nlat,nlon,a,b,c)
+      integer, intent(in) :: nlat, nlon
+      real, intent(out), dimension(:) :: a, b, c
 c
 c     coefficients a, b, and c for computing pbar(m,n,theta) are
 c     stored in location ((m-2)*(nlat+nlat-m-1))/2+n+1
 c
-      dimension a(1),b(1),c(1)
       mmax = min0(nlat,nlon/2+1)
       do 215 mp1=3,mmax
       m = mp1-1
@@ -792,8 +830,11 @@ c
       return
       end
       subroutine sea1(nlat,nlon,imid,z,idz,zin,wzfin,dwork)
-      dimension z(idz,*),zin(imid,nlat,3),wzfin(*)
-      double precision dwork(*)
+      integer, intent(in) :: nlat, nlon, imid, idz
+      real, intent(out), dimension(idz,imid) :: z
+      real, dimension(imid, nlat, 3) :: zin
+      real, dimension(:) :: wzfin
+      double precision, dimension(:) :: dwork
       call zfinit(nlat,nlon,wzfin,dwork)
       mmax = min0(nlat,nlon/2+1)
       do 33 mp1=1,mmax
@@ -807,8 +848,11 @@ c
       return
       end
       subroutine ses1(nlat,nlon,imid,p,pin,walin,dwork)
-      dimension p(imid,*),pin(imid,nlat,3),walin(*)
-      double precision dwork(*)
+      integer, intent(in) :: nlat, nlon, imid
+      real, intent(out), dimension(:, :) :: p
+      real, dimension(imid, nlat, 3) :: pin
+      real, dimension(:) :: walin
+      double precision, dimension(:) :: dwork
       call alinit (nlat,nlon,walin,dwork)
       mmax = min0(nlat,nlon/2+1)
       do 10 mp1=1,mmax
@@ -822,8 +866,9 @@ c
       return
       end
       subroutine zvinit (nlat,nlon,wzvin,dwork)
-      dimension       wzvin(1)
-      double precision dwork(*)
+      integer, intent(in) :: nlat, nlon
+      real, dimension(:) :: wzvin
+      double precision, dimension(nlat+2) :: dwork
       imid = (nlat+1)/2
       iw1 = 2*nlat*imid+1
 c
@@ -831,19 +876,22 @@ c     the length of wzvin is
 c         2*nlat*imid +3*(max0(mmax-2,0)*(nlat+nlat-mmax-1))/2
 c     the length of dwork is nlat+2
 c
-      call zvini1 (nlat,nlon,imid,wzvin,wzvin(iw1),dwork,
-     1                                    dwork(nlat/2+2))
+      call zvini1 (nlat,nlon,imid,wzvin(1:iw1-1),wzvin(iw1:),
+     1                               dwork(1:nlat/2+1),dwork(nlat/2+2:))
       return
       end
       subroutine zvini1 (nlat,nlon,imid,zv,abc,czv,work)
+      integer, intent(in) :: nlat, nlon, imid
+      real, dimension(:) :: abc
+      double precision, dimension(nlat/2+1) :: czv, work
 c
 c     abc must have 3*(max0(mmax-2,0)*(nlat+nlat-mmax-1))/2
 c     locations where mmax = min0(nlat,(nlon+1)/2)
 c     czv and work must each have nlat/2+1  locations
 c
-      dimension zv(imid,nlat,2),abc(1)
-      double precision pi,dt,czv(1),zvh,th,work(1)
-      pi = 4.*datan(1.d0)
+      real, dimension(imid,nlat,2) :: zv
+      double precision dt,zvh,th
+      double precision, parameter :: pi = 4.*datan(1.d0)
       dt = pi/(nlat-1)
       mdo = min0(2,nlat,(nlon+1)/2)
       do 160 mp1=1,mdo
@@ -862,8 +910,9 @@ c
       return
       end
       subroutine zwinit (nlat,nlon,wzwin,dwork)
-      dimension       wzwin(nlat*(nlat+1)+3*((nlat-3)*nlat+2)/2)
-      double precision dwork(nlat+1)
+      integer, intent(in) :: nlat, nlon
+      real, dimension(nlat*(nlat+1)+3*((nlat-3)*nlat+2)/2) :: wzwin
+      double precision, dimension(nlat+1) :: dwork
       imid = (nlat+1)/2
       iw1 = 2*nlat*imid+1
 c
@@ -875,14 +924,17 @@ c
       return
       end
       subroutine zwini1 (nlat,nlon,imid,zw,abc,czw,work)
+      integer, intent(in) :: nlat, nlon, imid
+      real, intent(out), dimension(imid, nlat, 2) :: zw
+      real, dimension(:) :: abc
+      double precision, dimension(nlat+1) :: czw, work
 c
 c     abc must have 3*(max0(mmax-2,0)*(nlat+nlat-mmax-1))/2
 c     locations where mmax = min0(nlat,(nlon+1)/2)
 c     czw and work must each have nlat+1 locations
 c
-      dimension zw(imid,nlat,2),abc(:)
-      double precision  pi,dt,czw(nlat+1),zwh,th,work(nlat+1)
-      pi = 4.*datan(1.d0)
+      double precision  dt,zwh,th
+      double precision, parameter :: pi = 4.0d0*datan(1.d0)
       dt = pi/(nlat-1)
       mdo = min0(3,nlat,(nlon+1)/2)
       if(mdo .lt. 2) return
@@ -902,7 +954,10 @@ c
       return
       end
       subroutine zvin (ityp,nlat,nlon,m,zv,i3,wzvin)
-      dimension       zv(1)        ,wzvin(:)
+      integer, intent(in) :: nlat, nlon, m
+      real, dimension((nlat+1)/2, nlat, 3) :: zv
+      integer, intent(inout) :: i3
+      real, intent(in), dimension(:) :: wzvin
       imid = (nlat+1)/2
       lim = nlat*imid
       mmax = min0(nlat,(nlon+1)/2)
@@ -919,8 +974,11 @@ c
       return
       end
       subroutine zvin1 (ityp,nlat,m,zv,imid,i3,zvz,zv1,a,b,c)
-      dimension       zv(imid,nlat,3),zvz(imid,nlat),zv1(imid,nlat),
-     1                a(:),b(:),c(:)
+      integer, intent(in) :: ityp, nlat, m, imid
+      real, intent(out), dimension(imid, nlat, 3) :: zv
+      integer, intent(inout) :: i3
+      real, intent(in), dimension(imid, nlat) :: zvz, zv1
+      real, intent(in), dimension(:) :: a, b, c
       save i1,i2
       ihold = i1
       i1 = i2
@@ -965,7 +1023,10 @@ c
    80 return
       end
       subroutine zwin (ityp,nlat,nlon,m,zw,i3,wzwin)
-      dimension       zw(1)        ,wzwin(1)
+      integer, intent(in) :: nlat, nlon, m
+      real, dimension((nlat+1)/2, nlat, 3) :: zw
+      integer, intent(inout) :: i3
+      real, intent(in), dimension(:) :: wzwin
       imid = (nlat+1)/2
       lim = nlat*imid
       mmax = min0(nlat,(nlon+1)/2)
@@ -982,8 +1043,10 @@ c
       return
       end
       subroutine zwin1 (ityp,nlat,m,zw,imid,i3,zw1,zw2,a,b,c)
-      dimension       zw(imid,nlat,3),zw1(imid,nlat),zw2(imid,nlat),
-     1                a(:),b(:),c(:)
+      integer, intent(in) :: nlat, m, imid
+      real, intent(out), dimension(imid, nlat, 3) :: zw
+      real, intent(in), dimension(imid, nlat) :: zw1, zw2
+      real, intent(in), dimension(:) :: a, b, c
       save i1,i2
       ihold = i1
       i1 = i2
@@ -1028,27 +1091,31 @@ c
    80 return
       end
       subroutine vbinit (nlat,nlon,wvbin,dwork)
-      dimension wvbin(1)
-      double precision dwork(*)
+      integer, intent(in) :: nlat, nlon
+      real, dimension(nlat*(nlat+1)+3*((nlat-3)*nlat+2)/2) :: wvbin
+      double precision, dimension(nlat+2) :: dwork
       imid = (nlat+1)/2
       iw1 = 2*nlat*imid+1
 c
 c     the length of wvbin is 2*nlat*imid+3*((nlat-3)*nlat+2)/2
 c     the length of dwork is nlat+2
 c
-      call vbini1 (nlat,nlon,imid,wvbin,wvbin(iw1),dwork,
-     1                                       dwork(nlat/2+2))
+      call vbini1 (nlat,nlon,imid,wvbin(1:iw1-1),wvbin(iw1:),
+     1                               dwork(1:nlat/2+1),dwork(nlat/2+2:))
       return
       end
       subroutine vbini1 (nlat,nlon,imid,vb,abc,cvb,work)
+      integer, intent(in) :: nlat, nlon, imid
+      real, intent(out), dimension(imid, nlat, 2) :: vb
+      real, dimension(:) :: abc
+      double precision, dimension(nlat+1) :: cvb, work
 c
 c     abc must have 3*(max0(mmax-2,0)*(nlat+nlat-mmax-1))/2
 c     locations where mmax = min0(nlat,(nlon+1)/2)
 c     cvb and work must each have nlat+1 locations
 c
-      dimension vb(imid,nlat,2),abc(1)
-      double precision pi,dt,cvb(1),th,vbh,work(1)
-      pi = 4.*datan(1.d0)
+      double precision dt,th,vbh
+      double precision, parameter :: pi = 4.0d0*datan(1.d0)
       dt = pi/(nlat-1)
       mdo = min0(2,nlat,(nlon+1)/2)
       do 160 mp1=1,mdo
@@ -1066,27 +1133,31 @@ c
       return
       end
       subroutine wbinit (nlat,nlon,wwbin,dwork)
-      dimension       wwbin(1)
-      double precision dwork(*)
+      integer, intent(in) :: nlat, nlon
+      real, dimension(nlat*(nlat+1) + 3*((nlat-3)*nlat+2)/2) :: wwbin
+      double precision, dimension(nlat+2) :: dwork
       imid = (nlat+1)/2
       iw1 = 2*nlat*imid+1
 c
 c     the length of wwbin is 2*nlat*imid+3*((nlat-3)*nlat+2)/2
 c     the length of dwork is nlat+2
 c
-      call wbini1 (nlat,nlon,imid,wwbin,wwbin(iw1),dwork,
-     1                                        dwork(nlat/2+2))
+      call wbini1 (nlat,nlon,imid,wwbin(1:iw1-1),wwbin(iw1:),
+     1                               dwork(1:nlat/2+1),dwork(nlat/2+2:))
       return
       end
       subroutine wbini1 (nlat,nlon,imid,wb,abc,cwb,work)
+      integer, intent(in) :: nlat, nlon, imid
+      real, dimension(imid, nlat, 2) :: wb
+      real, dimension(:) :: abc
+      double precision, dimension(nlat/2+1) :: cwb, work
 c
 c     abc must have 3*(max0(mmax-2,0)*(nlat+nlat-mmax-1))/2
 c     locations where mmax = min0(nlat,(nlon+1)/2)
 c     cwb and work must each have nlat/2+1 locations
 c
-      dimension wb(imid,nlat,2),abc(1)
-      double precision pi,dt,cwb(1),wbh,th,work(1)
-      pi = 4.*datan(1.d0)
+      double precision dt,wbh,th
+      double precision, parameter :: pi = 4.0d0*datan(1.d0)
       dt = pi/(nlat-1)
       mdo = min0(3,nlat,(nlon+1)/2)
       if(mdo .lt. 2) return
@@ -1105,7 +1176,10 @@ c
       return
       end
       subroutine vbin (ityp,nlat,nlon,m,vb,i3,wvbin)
-      dimension       vb(1)        ,wvbin(1)
+      integer, intent(in) :: nlat, nlon, m, ityp
+      real, intent(out), dimension((nlat+1)/2,nlat,3) :: vb
+      integer, intent(inout) :: i3
+      real, intent(in), dimension(:) :: wvbin
       imid = (nlat+1)/2
       lim = nlat*imid
       mmax = min0(nlat,(nlon+1)/2)
@@ -1123,8 +1197,11 @@ c
       return
       end
       subroutine vbin1 (ityp,nlat,m,vb,imid,i3,vbz,vb1,a,b,c)
-      dimension       vb(imid,nlat,3),vbz(imid,1),vb1(imid,nlat),
-     1                a(:),b(:),c(:)
+      integer, intent(in) :: nlat, m, imid, ityp
+      real, intent(out), dimension(imid, nlat, 3) :: vb
+      integer, intent(inout) :: i3
+      real, intent(in), dimension(imid, nlat) :: vbz, vb1
+      real, intent(in), dimension(:) :: a, b, c
       save i1,i2
       ihold = i1
       i1 = i2
@@ -1169,7 +1246,10 @@ c
    80 return
       end
       subroutine wbin (ityp,nlat,nlon,m,wb,i3,wwbin)
-      dimension       wb(1)        ,wwbin(1)
+      integer, intent(in) :: nlat, nlon, m, ityp
+      real, intent(out), dimension((nlat+1)/2, nlat, 3) :: wb
+      integer, intent(inout) :: i3
+      real, intent(in), dimension(:) :: wwbin
       imid = (nlat+1)/2
       lim = nlat*imid
       mmax = min0(nlat,(nlon+1)/2)
@@ -1187,8 +1267,11 @@ c
       return
       end
       subroutine wbin1 (ityp,nlat,m,wb,imid,i3,wb1,wb2,a,b,c)
-      dimension       wb(imid,nlat,3),wb1(imid,nlat),wb2(imid,nlat),
-     1                a(:),b(:),c(:)
+      integer, intent(in) :: nlat, m, imid, ityp
+      real, intent(out), dimension(imid, nlat, 3) :: wb
+      integer, intent(inout) :: i3
+      real, intent(in), dimension(imid, nlat) :: wb1, wb2
+      real, intent(in), dimension(:) :: a, b, c
       save i1,i2
       ihold = i1
       i1 = i2
@@ -1232,7 +1315,9 @@ c
    75 continue
    80 return
       end
-       subroutine dzvk(nlat,m,n,czv,work)
+      subroutine dzvk(nlat,m,n,czv,work)
+      integer, intent(in) :: nlat, m, n
+      double precision, intent(out), dimension(nlat/2+1) :: work, czv
 c
 c     subroutine dzvk computes the coefficients in the trigonometric
 c     expansion of the quadrature function zvbar(n,m,theta)
@@ -1251,8 +1336,7 @@ c     output parameter
 c
 c     czv     the fourier coefficients of zvbar(n,m,theta).
 c
-      dimension czv(1),work(1)
-      double precision czv,sc1,sum,work,t1,t2
+      double precision sc1,sum,t1,t2
       if(n .le. 0) return
       lc = (nlat+1)/2
       sc1 = 2.d0/float(nlat-1)
@@ -1324,6 +1408,10 @@ c
       return
       end
       subroutine dzvt(nlat,m,n,th,czv,zvh)
+      integer, intent(in) :: nlat, m, n
+      double precision, intent(in) :: th
+      double precision, intent(in), dimension((nlat+1)/2) :: czv
+      double precision, intent(out) :: zvh
 c
 c     subroutine dzvt tabulates the function zvbar(n,m,theta)
 c     at theta = th in double precision
@@ -1343,8 +1431,7 @@ c     output parameter
 c
 c     zvh     zvbar(m,n,theta) evaluated at theta = th
 c
-      dimension czv((nlat-1)/2)
-      double precision th,czv,zvh,cth,sth,cdt,sdt,chh
+      double precision cth,sth,cdt,sdt,chh
       zvh = 0.
       if(n .le. 0) return
       lc = (nlat+1)/2
@@ -1454,6 +1541,9 @@ c
       return
       end
       subroutine dzwk(nlat,m,n,czw,work)
+      integer, intent(in) :: nlat, m, n
+      double precision, intent(out), dimension(n/2+1) :: work
+      double precision, intent(out), dimension((nlat+1)/2) :: czw
 c
 c     subroutine dzwk computes the coefficients in the trigonometric
 c     expansion of the quadrature function zwbar(n,m,theta)
@@ -1472,8 +1562,7 @@ c     output parameter
 c
 c     czw     the fourier coefficients of zwbar(n,m,theta).
 c
-      dimension czw(1),work(nlat/2+1)
-      double precision czw,work,sc1,sum,t1,t2
+      double precision sc1,sum,t1,t2
       if(n .le. 0) return
       lc = (nlat+1)/2
       sc1 = 2.d0/float(nlat-1)
@@ -1547,6 +1636,10 @@ c
       return
       end
       subroutine dzwt(nlat,m,n,th,czw,zwh)
+      integer, intent(in) :: nlat, n, m
+      double precision, intent(in) :: th
+      double precision, intent(in), dimension((nlat+1)/2) :: czw
+      double precision, intent(out) :: zwh
 c
 c     subroutine dzwt tabulates the function zwbar(n,m,theta)
 c     at theta = th in double precision
@@ -1567,8 +1660,7 @@ c     output parameter
 c
 c     zwh     zwbar(m,n,theta) evaluated at theta = th
 c
-      dimension czw((nlat+1)/2)
-      double precision czw,zwh,th,cth,sth,cdt,sdt,chh
+      double precision cth,sth,cdt,sdt,chh
       zwh = 0.
       if(n .le. 0) return
       lc = (nlat+1)/2
@@ -1678,7 +1770,10 @@ c
       return
       end
       subroutine dvbk(m,n,cv,work)
-      double precision cv((n+1)/2),work((n+1)/2),fn,fk,cf
+      integer, intent(in) :: m, n
+      double precision, intent(out), dimension((n+1)/2) :: cv
+      double precision, intent(out), dimension((n+1)/2) :: work
+      double precision fn,fk,cf
       cv(1) = 0.
       if(n .le. 0) return
       fn = n
@@ -1729,7 +1824,10 @@ c
       return
       end
       subroutine dwbk(m,n,cw,work)
-      double precision cw(1),work(1),fn,cf,srnp1
+      integer, intent(in) :: m, n
+      double precision, intent(out), dimension(n/2) :: cw
+      double precision, intent(out), dimension(n/2+1) :: work
+      double precision fn,cf,srnp1
       cw(1) = 0.
       if(n.le.0 .or. m.le.0) return
       fn = n
@@ -1782,8 +1880,11 @@ c
    50 return
       end
       subroutine dvbt(m,n,theta,cv,vh)
-      dimension cv(1)
-      double precision cv,vh,theta,cth,sth,cdt,sdt,chh
+      integer, intent(in) :: m, n
+      double precision, intent(in) :: theta
+      double precision, intent(in), dimension((n+1)/2) :: cv
+      double precision, intent(out) :: vh
+      double precision cth,sth,cdt,sdt,chh
       vh = 0.
       if(n.eq.0) return
       cth = dcos(theta)
@@ -1843,8 +1944,11 @@ c
       return
       end
       subroutine dwbt(m,n,theta,cw,wh)
-      dimension cw((n+1)/2)
-      double precision theta,cw,wh,cth,sth,cdt,sdt,chh
+      integer, intent(in) :: m, n
+      double precision, intent(in) :: theta
+      double precision, intent(in), dimension((n+1)/2) :: cw
+      double precision, intent(out) :: wh
+      double precision cth,sth,cdt,sdt,chh
       wh = 0.
       if(n.le.0 .or. m.le.0) return
       cth = dcos(theta)
@@ -1906,25 +2010,27 @@ c
       return
       end
       subroutine rabcv(nlat,nlon,abc)
+      integer, intent(in) :: nlat, nlon
+      real, intent(out), dimension(:) :: abc
 c
 c     subroutine rabcp computes the coefficients in the recurrence
 c     relation for the functions vbar(m,n,theta). array abc
 c     must have 3*(max0(mmax-2,0)*(nlat+nlat-mmax-1))/2 locations.
 c
-      dimension abc(1)
       mmax = min0(nlat,(nlon+1)/2)
       labc = (max0(mmax-2,0)*(nlat+nlat-mmax-1))/2
       iw1 = labc+1
       iw2 = iw1+labc
-      call rabcv1(nlat,nlon,abc,abc(iw1),abc(iw2))
+      call rabcv1(nlat,nlon,abc(1:iw1-1),abc(iw1:iw2-1),abc(iw2:))
       return
       end
       subroutine rabcv1(nlat,nlon,a,b,c)
+      integer, intent(in) :: nlat, nlon
+      real, intent(out), dimension(:) :: a, b, c
 c
 c     coefficients a, b, and c for computing vbar(m,n,theta) are
 c     stored in location ((m-2)*(nlat+nlat-m-1))/2+n+1
 c
-      dimension a(1),b(1),c(1)
       mmax = min0(nlat,(nlon+1)/2)
       if(mmax .lt. 3) return
       do 215 mp1=3,mmax
@@ -1962,25 +2068,27 @@ c
       return
       end
       subroutine rabcw(nlat,nlon,abc)
+      integer, intent(in) :: nlat, nlon
+      real, intent(out), dimension(:) :: abc
 c
 c     subroutine rabcw computes the coefficients in the recurrence
 c     relation for the functions wbar(m,n,theta). array abc
 c     must have 3*(max0(mmax-2,0)*(nlat+nlat-mmax-1))/2 locations.
 c
-      dimension abc(1)
       mmax = min0(nlat,(nlon+1)/2)
       labc = (max0(mmax-2,0)*(nlat+nlat-mmax-1))/2
       iw1 = labc+1
       iw2 = iw1+labc
-      call rabcw1(nlat,nlon,abc,abc(iw1),abc(iw2))
+      call rabcw1(nlat,nlon,abc(1:iw1-1),abc(iw1:iw2-1),abc(iw2:))
       return
       end
       subroutine rabcw1(nlat,nlon,a,b,c)
+      integer, intent(in) :: nlat, nlon
+      real, intent(out), dimension(:) :: a, b, c
 c
 c     coefficients a, b, and c for computing wbar(m,n,theta) are
 c     stored in location ((m-2)*(nlat+nlat-m-1))/2+n+1
 c
-      dimension a(1),b(1),c(1)
       mmax = min0(nlat,(nlon+1)/2)
       if(mmax .lt. 4) return
       do 215 mp1=4,mmax
@@ -2021,27 +2129,32 @@ c
       return
       end
       subroutine vtinit (nlat,nlon,wvbin,dwork)
-      dimension       wvbin(*)
-      double precision dwork(*)
+      integer, intent(in) :: nlat, nlon
+      real, dimension(:) :: wvbin
+      double precision, dimension(nlat+2) :: dwork
       imid = (nlat+1)/2
       iw1 = 2*nlat*imid+1
 c
 c     the length of wvbin is 2*nlat*imid+3*((nlat-3)*nlat+2)/2
 c     the length of dwork is nlat+2
 c
-      call vtini1 (nlat,nlon,imid,wvbin,wvbin(iw1),dwork,
-     1                                       dwork(nlat/2+2))
+      call vtini1 (nlat,nlon,imid,wvbin(1:iw1-1),wvbin(iw1:),
+     1                               dwork(1:nlat/2+1),dwork(nlat/2+2:))
       return
       end
       subroutine vtini1 (nlat,nlon,imid,vb,abc,cvb,work)
+      integer, intent(in) :: nlat, nlon, imid
+      real, intent(out), dimension(imid, nlat, 2) :: vb
+      real, dimension(:) :: abc
+      double precision, dimension(nlat/2+1) :: cvb
+      double precision, dimension(nlat/2+1) :: work
 c
 c     abc must have 3*(max0(mmax-2,0)*(nlat+nlat-mmax-1))/2
 c     locations where mmax = min0(nlat,(nlon+1)/2)
 c     cvb and work must each have nlat/2+1 locations
 c
-      dimension vb(imid,nlat,2),abc(1),cvb(1)
-      double precision pi,dt,cvb,th,vbh,work(*)
-      pi = 4.*datan(1.d0)
+      double precision dt,th,vbh
+      double precision, parameter :: pi = 4.0d0*datan(1.d0)
       dt = pi/(nlat-1)
       mdo = min0(2,nlat,(nlon+1)/2)
       do 160 mp1=1,mdo
@@ -2059,27 +2172,31 @@ c
       return
       end
       subroutine wtinit (nlat,nlon,wwbin,dwork)
-      dimension       wwbin(1)
-      double precision dwork(*)
+      integer, intent(in) :: nlat, nlon
+      real, dimension(:) :: wwbin
+      double precision, dimension(nlat+2) :: dwork
       imid = (nlat+1)/2
       iw1 = 2*nlat*imid+1
 c
 c     the length of wwbin is 2*nlat*imid+3*((nlat-3)*nlat+2)/2
 c     the length of dwork is nlat+2
 c
-      call wtini1 (nlat,nlon,imid,wwbin,wwbin(iw1),dwork,
-     1                                       dwork(nlat/2+2))
+      call wtini1 (nlat,nlon,imid,wwbin(1:iw1-1),wwbin(iw1:),
+     1                               dwork(1:nlat/2+1),dwork(nlat/2+2:))
       return
       end
       subroutine wtini1 (nlat,nlon,imid,wb,abc,cwb,work)
+      integer, intent(in) :: nlat, nlon, imid
+      real, intent(out), dimension(imid, nlat, 2) :: wb
+      real, intent(out), dimension(:) :: abc
+      double precision, dimension(nlat/2+1) :: cwb, work
 c
 c     abc must have 3*(max0(mmax-2,0)*(nlat+nlat-mmax-1))/2
 c     locations where mmax = min0(nlat,(nlon+1)/2)
 c     cwb and work must each have nlat/2+1 locations
 c
-      dimension wb(imid,nlat,2),abc(1)
-      double precision pi,dt,cwb(*),wbh,th,work(*)
-      pi = 4.*datan(1.d0)
+      double precision dt,wbh,th
+      double precision, parameter :: pi = 4.0d0*datan(1.d0)
       dt = pi/(nlat-1)
       mdo = min0(3,nlat,(nlon+1)/2)
       if(mdo .lt. 2) return
@@ -2098,8 +2215,10 @@ c
       return
       end
       subroutine vtgint (nlat,nlon,theta,wvbin,work)
-      dimension       wvbin(*)
-      double precision theta(*), work(*)
+      integer, intent(in) :: nlat, nlon
+      double precision, intent(in), dimension((nlat+1)/2) :: theta
+      real, dimension(nlat*(nlat+1) + 3*((nlat-3)*nlat+2)/2) :: wvbin
+      double precision, dimension(nlat+2) :: work
       imid = (nlat+1)/2
       iw1 = 2*nlat*imid+1
 c
@@ -2108,18 +2227,23 @@ c     nlat is the maximum value of n+1
 c     the length of wvbin is 2*nlat*imid+3*((nlat-3)*nlat+2)/2
 c     the length of work is nlat+2
 c
-      call vtgit1 (nlat,nlon,imid,theta,wvbin,wvbin(iw1),
-     +                        work,work(nlat/2+2))
+      call vtgit1 (nlat,nlon,imid,theta,wvbin(1:iw1-1),wvbin(iw1:),
+     +                        work(1:nlat/2+1),work(nlat/2+2:))
       return
       end
       subroutine vtgit1 (nlat,nlon,imid,theta,vb,abc,cvb,work)
+      integer, intent(in) :: nlat, nlon, imid
+      double precision, intent(in), dimension((nlat+1)/2) :: theta
+      real, intent(out), dimension(imid, nlat, 2) :: vb
+      real, intent(out), dimension(:) :: abc
+      double precision, dimension(nlat/2+1) :: cvb
+      double precision, dimension(nlat/2+1) :: work
 c
 c     abc must have 3*(max0(mmax-2,0)*(nlat+nlat-mmax-1))/2
 c     locations where mmax = min0(nlat,(nlon+1)/2)
 c     cvb and work must each have nlat/2+1   locations
 c
-      dimension vb(imid,nlat,2),abc(*)
-      double precision theta(*),cvb(*),work(*),vbh
+      double precision vbh
       mdo = min0(2,nlat,(nlon+1)/2)
       do 160 mp1=1,mdo
       m = mp1-1
@@ -2135,8 +2259,10 @@ c
       return
       end
       subroutine wtgint (nlat,nlon,theta,wwbin,work)
-      dimension       wwbin(*)
-      double precision theta(*), work(*)
+      integer, intent(in) :: nlat, nlon
+      double precision, dimension((nlat+1)/2) :: theta
+      real, dimension(nlat*(nlat+1) + 3*((nlat-3)*nlat+2)/2) :: wwbin
+      double precision, dimension(nlat+2) :: work
       imid = (nlat+1)/2
       iw1 = 2*nlat*imid+1
 c
@@ -2145,17 +2271,21 @@ c     nlat is the maximum value of n+1
 c     the length of wwbin is 2*nlat*imid+3*((nlat-3)*nlat+2)/2
 c     the length of work is nlat+2
 c
-      call wtgit1 (nlat,nlon,imid,theta,wwbin,wwbin(iw1),
-     1                        work,work(nlat/2+2))
+      call wtgit1 (nlat,nlon,imid,theta,wwbin(1:iw1-1),wwbin(iw1),
+     1                        work(1:nlat/2+1),work(nlat/2+2:))
       return
       end
       subroutine wtgit1 (nlat,nlon,imid,theta,wb,abc,cwb,work)
+      integer, intent(in) :: nlat, nlon, imid
+      real, intent(out), dimension(imid, nlat, 2) :: wb
+      real, dimension(3*((nlat-3)*nlat+2)/2) :: abc
+      double precision, dimension(imid) :: theta
+      double precision, dimension(nlat/2+1) :: cwb, work
 c
 c     abc must have 3*((nlat-3)*nlat+2)/2 locations
 c     cwb and work must each have nlat/2+1 locations
 c
-      dimension wb(imid,nlat,2),abc(1)
-      double precision theta(*), cwb(*), work(*), wbh
+      double precision wbh
       mdo = min0(3,nlat,(nlon+1)/2)
       if(mdo .lt. 2) return
       do 160 mp1=2,mdo
@@ -2172,7 +2302,10 @@ c
       return
       end
       subroutine dvtk(m,n,cv,work)
-      double precision cv(*),work(*),fn,fk,cf,srnp1
+      integer, intent(in) :: m, n
+      double precision, intent(out), dimension((n+1)/2) :: cv
+      double precision, dimension(:) :: work
+      double precision fn,fk,cf,srnp1
       cv(1) = 0.
       if(n .le. 0) return
       fn = n
@@ -2223,7 +2356,10 @@ c
       return
       end
       subroutine dwtk(m,n,cw,work)
-      double precision cw(*),work(*),fn,cf,srnp1
+      integer, intent(in) :: m, n
+      double precision, dimension(n/2) :: cw
+      double precision, dimension(:) :: work
+      double precision fn,cf,srnp1
       cw(1) = 0.
       if(n.le.0 .or. m.le.0) return
       fn = n
@@ -2280,8 +2416,11 @@ c
    50 return
       end
       subroutine dvtt(m,n,theta,cv,vh)
-      dimension cv(1)
-      double precision cv,vh,theta,cth,sth,cdt,sdt,chh
+      integer, intent(in) :: m, n
+      double precision, intent(in) :: theta
+      double precision, intent(in), dimension((n+1)/2) :: cv
+      double precision, intent(out) :: vh
+      double precision cth,sth,cdt,sdt,chh
       vh = 0.
       if(n.eq.0) return
       cth = dcos(theta)
@@ -2341,8 +2480,11 @@ c
       return
       end
       subroutine dwtt(m,n,theta,cw,wh)
-      dimension cw((n+1)/2)
-      double precision theta,cw,wh,cth,sth,cdt,sdt,chh
+      integer, intent(in) :: m, n
+      double precision, intent(in) :: theta
+      double precision, dimension((n+1)/2) :: cw
+      double precision, intent(out) :: wh
+      double precision cth,sth,cdt,sdt,chh
       wh = 0.
       if(n.le.0 .or. m.le.0) return
       cth = dcos(theta)
@@ -2404,8 +2546,10 @@ c
       return
       end
       subroutine vbgint (nlat,nlon,theta,wvbin,work)
-      dimension       wvbin(1)
-      double precision theta(*),work(*)
+      integer, intent(in) :: nlat, nlon
+      double precision, dimension((nlat+1)/2) :: theta
+      real, dimension(nlat*(nlat+1)+3*((nlat-3)*nlat+2)/2) :: wvbin
+      double precision, dimension(nlat+2) :: work
       imid = (nlat+1)/2
       iw1 = 2*nlat*imid+1
 c
@@ -2414,18 +2558,22 @@ c     nlat is the maximum value of n+1
 c     the length of wvbin is 2*nlat*imid+3*((nlat-3)*nlat+2)/2
 c     the length of work is nlat+2
 c
-      call vbgit1 (nlat,nlon,imid,theta,wvbin,wvbin(iw1),
-     +                        work,work(nlat/2+2))
+      call vbgit1 (nlat,nlon,imid,theta,wvbin(1:iw1-1),wvbin(iw1:),
+     +                        work(1:nlat/2+1),work(nlat/2+2:))
       return
       end
       subroutine vbgit1 (nlat,nlon,imid,theta,vb,abc,cvb,work)
+      integer, intent(in) :: nlat, nlon, imid
+      double precision, dimension(imid) :: theta
+      real, dimension(imid, nlat, 2) :: vb
+      real, dimension(:) :: abc
+      double precision, dimension(nlat/2+1) :: cvb, work
 c
 c     abc must have 3*(max0(mmax-2,0)*(nlat+nlat-mmax-1))/2
 c     locations where mmax = min0(nlat,(nlon+1)/2)
 c     cvb and work must each have nlat/2+1 locations
 c
-      dimension vb(imid,nlat,2),abc(1)
-      double precision cvb(1),theta(1),vbh,work(1)
+      double precision vbh
       mdo = min0(2,nlat,(nlon+1)/2)
       do 160 mp1=1,mdo
       m = mp1-1
@@ -2441,8 +2589,10 @@ c
       return
       end
       subroutine wbgint (nlat,nlon,theta,wwbin,work)
-      dimension       wwbin(1)
-      double precision work(*),theta(*)
+      integer, intent(in) :: nlat, nlon
+      double precision, dimension((nlat+1)/2) :: theta
+      real, dimension(nlat*(nlat+1)+3*((nlat-3)*nlat+2)/2) :: wwbin
+      double precision, dimension(nlat+2) :: work
       imid = (nlat+1)/2
       iw1 = 2*nlat*imid+1
 c
@@ -2456,12 +2606,16 @@ c
       return
       end
       subroutine wbgit1 (nlat,nlon,imid,theta,wb,abc,cwb,work)
+      integer, intent(in) :: nlat, nlon, imid
+      double precision, dimension((nlat+1)/2) :: theta
+      real, dimension(imid, nlat, 2) :: wb
+      real, dimension(3*((nlat-3)*nlat+2)/2) :: abc
+      double precision, dimension(nlat/2+1) :: cwb, work
 c
 c     abc must have 3*((nlat-3)*nlat+2)/2 locations
 c     cwb and work must each have nlat/2+1 locations
 c
-      dimension wb(imid,nlat,2),abc(1)
-      double precision cwb(1),theta(1),wbh,work(1)
+      double precision wbh
       mdo = min0(3,nlat,(nlon+1)/2)
       if(mdo .lt. 2) return
       do 160 mp1=2,mdo

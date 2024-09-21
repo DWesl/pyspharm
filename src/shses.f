@@ -418,8 +418,12 @@ c ****************************************************************
      +                  ldwork,ierror)
       use sp_hrfft, only: hrffti
       use sp_sphcom, only: ses1
-      dimension wshses(*),work(*)
-      double precision dwork(*)
+      integer, intent(in) :: nlat, nlon, lshses, lwork, ldwork
+      integer, intent(out) :: ierror
+      real, target, dimension(lshses) :: wshses
+      real, dimension(lwork) :: work
+      double precision dwork(ldwork)
+      real, pointer, dimension(:, :) :: sesarg
       ierror = 1
       if(nlat.lt.3) return
       ierror = 2
@@ -428,6 +432,7 @@ c ****************************************************************
       mmax = min0(nlat,nlon/2+1)
       imid = (nlat+1)/2
       lpimn = (imid*mmax*(nlat+nlat-mmax+1))/2
+      sesarg (1:imid, 1:(mmax*(2*nlat-mmax+1)/2)) => WSHSES(1:lpimn)
       if(lshses .lt. lpimn+nlon+15) return
       ierror = 4
       labc = 3*((mmax-2)*(nlat+nlat-mmax-1))/2
@@ -436,7 +441,9 @@ c ****************************************************************
       if (ldwork .lt. nlat+1) return
       ierror = 0
       iw1 = 3*nlat*imid+1
-      CALL SES1(NLAT,NLON,IMID,WSHSES,WORK,WORK(IW1),DWORK)
-      call hrffti(nlon,wshses(lpimn+1))
+      CALL SES1(NLAT,NLON,IMID,
+     1       sesarg,
+     2       WORK(1:iw1-1),WORK(IW1:lwork),DWORK)
+      call hrffti(nlon,wshses(lpimn+1:))
       return
       end

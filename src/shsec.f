@@ -463,7 +463,7 @@ c ****************************************************************
       subroutine shseci(nlat,nlon,wshsec,lshsec,dwork,ldwork,ierror)
       use sp_hrfft, only: hrffti
       use sp_sphcom, only: alinit
-      dimension wshsec(*)
+      dimension wshsec(:)
       double precision dwork(ldwork)
       ierror = 1
       if(nlat.lt.3) return
@@ -478,8 +478,8 @@ c ****************************************************************
       ierror = 4
       if(ldwork .lt. nlat+1) return
       ierror = 0
-      call alinit(nlat,nlon,wshsec,dwork)
       iw1 = lzz1+labc+1
-      call hrffti(nlon,wshsec(iw1))
+      call alinit(nlat,nlon,wshsec(1:iw1-1),dwork)
+      call hrffti(nlon,wshsec(iw1:lshsec))
       return
       end

@@ -442,8 +442,9 @@ c ****************************************************************
      +                  ldwork,ierror)
       use sp_hrfft, only: hrffti
       use sp_sphcom, only: sea1
-      dimension wshaes(*),work(*)
-      double precision dwork(*)
+      real, dimension(nlat*(nlat+1)*(nlat+1)/4+nlon+15) :: wshaes
+      real, dimension(5*nlat*(nlat+1)/2 + 3*((nlat-3)*nlat+2/2)) :: work
+      double precision dwork(:)
 c
 c     length of wshaes is (l*(l+1)*imid)/2+nlon+15
 c     length of work is 5*l*imid + 3*((l-3)*l+2)/2
@@ -465,7 +466,8 @@ c
       ierror = 0
       iw1 = 3*nlat*imid+1
       idz = (mmax*(nlat+nlat-mmax+1))/2
-      call sea1(nlat,nlon,imid,wshaes,idz,work,work(iw1),dwork)
+      call sea1(nlat,nlon,imid,wshaes,idz,work(1:iw1-1),work(iw1:),
+     1           dwork)
       call hrffti(nlon,wshaes(lzimn+1))
       return
       end

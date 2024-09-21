@@ -1000,15 +1000,15 @@ c
       ierror = 0
       iw1 = 3*nlat*imid+1
       idz = (mmax*(nlat+nlat-mmax+1))/2
-      call ves1(nlat,nlon,imid,wvhses,wvhses(lzimn+1),idz,work,
-     1                                         work(iw1),dwork)
+      call ves1(nlat,nlon,imid,wvhses(1:lzimn),wvhses(lzimn+1:),idz,
+     1                                   work(1:iw1-1),work(iw1:),dwork)
       call hrffti(nlon,wvhses(2*lzimn+1))
       return
-      end
+      contains
       subroutine ves1(nlat,nlon,imid,vb,wb,idz,vin,wzvin,dwork)
       use sp_sphcom, only: wbin, vbinit, vbin, wbinit
-      dimension vb(imid,*),wb(imid,*),vin(imid,nlat,3),wzvin(*)
-      double precision dwork(*)
+      dimension vb(imid,*),wb(imid,*),vin(imid,nlat,3),wzvin(:)
+      double precision dwork(nlat+2)
       mmax = min0(nlat,(nlon+1)/2)
       call vbinit (nlat,nlon,wzvin,dwork)
       do 33 mp1=1,mmax
@@ -1030,3 +1030,4 @@ c
    34 continue
       return
       end
+      end subroutine vhsesi
