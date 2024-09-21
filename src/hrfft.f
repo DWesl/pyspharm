@@ -191,18 +191,22 @@ c
       public :: hrfftf, hrffti, hrfftb
       contains
       subroutine hrffti (n,wsave)
-      dimension       wsave(n+15)                                              
+      integer, intent(in) :: n
+      real, intent(out), dimension(2*n+15) :: wsave
       common /hrf/ tfft
       tfft = 0.
       if (n .eq. 1) return                                                     
-      call hrfti1 (n,wsave(1),wsave(n+1))
+      call hrfti1 (n,wsave(1:n),wsave(n+1:))
       return                                                                   
       end                                                                      
       subroutine hrfti1 (n,wa,fac)
+      integer, intent(in) :: n
+      real, intent(out), dimension(2*n) :: wa
+      real, intent(out), dimension(15) :: fac
 c                                                                              
 c     a multiple fft package for spherepack
 c                                                                              
-      dimension       wa(n)      ,fac(15)    ,ntryh(4)                         
+      dimension       ntryh(4)
       double precision tpi,argh,argld,arg
       data ntryh(1),ntryh(2),ntryh(3),ntryh(4)/4,2,3,5/                        
       nl = n                                                                   
@@ -260,22 +264,29 @@ c
       return           
       end              
       subroutine hrfftf (m,n,r,mdimr,whrfft,work)
+      integer, intent(in) :: m, n, mdimr
+      real, intent(inout), dimension(mdimr, n) :: r
+      real, intent(in), dimension(2*n+15) :: whrfft
+      real, intent(out), dimension(m*n) :: work
 c                      
 c     a multiple fft package for spherepack
 c                      
-      dimension       r(mdimr,n)  ,work(1)    ,whrfft(n+15)
       common /hrf/ tfft
       if (n .eq. 1) return                
 c     tstart = second(dum)
-      call hrftf1 (m,n,r,mdimr,work,whrfft,whrfft(n+1))
+      call hrftf1 (m,n,r,mdimr,work,whrfft(1:n),whrfft(n+1:))
 c     tfft = tfft+second(dum)-tstart
       return           
       end              
       subroutine hrftf1 (m,n,c,mdimc,ch,wa,fac)
+      integer, intent(in) :: m, n, mdimc
+      real, intent(inout), dimension(mdimc, n) :: c
+      real, intent(in), dimension(n) :: wa
+      real, intent(in), dimension(15) :: fac
 c                      
 c     a multiple fft package for spherepack
 c                      
-      dimension       ch(m,n) ,c(mdimc,n)  ,wa(n)   ,fac(15)
+      dimension       ch(m,n)
       nf = fac(2)      
       na = 1           
       l2 = n           
@@ -829,10 +840,13 @@ c
       return           
       end              
       subroutine hrfftb(m,n,r,mdimr,whrfft,work)
+      integer, intent(in) :: m, n, mdimr
+      real, intent(inout), dimension(mdimr, n) :: r
+      real, intent(in), dimension(2*n+15) :: whrfft
+      real, intent(out), dimension(m*n) :: work
 c                      
 c     a multiple fft package for spherepack
 c                      
-      dimension     r(mdimr,n)  ,work(1)    ,whrfft(n+15)
       common /hrf/ tfft
       if (n .eq. 1) return                
 c     tstart = second(dum)
@@ -841,10 +855,14 @@ c     tfft = tfft+second(dum)-tstart
       return           
       end              
       subroutine hrftb1 (m,n,c,mdimc,ch,wa,fac)
+      integer, intent(in) :: m, n, mdimc
+      real, intent(inout), dimension(mdimc, n) :: c
+      real, intent(in), dimension(n) :: wa
+      real, intent(in), dimension(15) :: fac
 c                      
 c     a multiple fft package for spherepack
 c                      
-      dimension       ch(m,n), c(mdimc,n), wa(n) ,fac(15)
+      dimension       ch(m,n)
       nf = fac(2)      
       na = 0           
       l1 = 1           
