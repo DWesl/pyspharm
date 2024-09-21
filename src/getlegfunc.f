@@ -1,10 +1,12 @@
       subroutine getlegfunc(legfunc,lat,ntrunc)
       use sp_alf, only: alfk, lfpt
-      integer ntrunc,m,n,nmstrt
-      real lat,theta,pi,
-     *     legfunc((ntrunc+1)*(ntrunc+2)/2),cp((ntrunc/2)+1)
+      integer, intent(in) :: ntrunc
+      real, intent(in) :: lat
+      real, intent(out), dimension((ntrunc+1)*(ntrunc+2)/2) :: legfunc
+      integer m,n,nmstrt
+      real theta,cp((ntrunc/2)+1)
+      real, parameter :: pi = 4.*atan(1.0)
 
-      pi = 4.*atan(1.0)
       theta = 0.5*pi-(pi/180.)*lat
       nmstrt = 0
       do m=1,ntrunc+1
